@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 ## Current Position
 
 Phase: 1 of 4 (Foundation + Identity + Catalog)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-03-13 — Completed 01-03-PLAN.md (Client Identity Domain)
+Plan: 4 of 4 in current phase
+Status: Phase complete
+Last activity: 2026-03-13 — Completed 01-04-PLAN.md (Services Catalog Domain)
 
-Progress: [███░░░░░░░] 30% (3/10 plans complete)
+Progress: [████░░░░░░] 40% (4/10 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
+- Total plans completed: 4
 - Average duration: 4 min
-- Total execution time: 13 min
+- Total execution time: 16 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| Phase 1 | 3/4 | 13 min | 4 min |
+| Phase 1 | 4/4 | 16 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (4 min), 01-02 (4 min), 01-03 (5 min)
+- Last 5 plans: 01-01 (4 min), 01-02 (4 min), 01-03 (5 min), 01-04 (3 min)
 - Trend: steady
 
 *Updated after each plan completion*
@@ -54,6 +54,9 @@ Recent decisions affecting current work:
 - [01-03]: Phone normalization done in service layer — consistent across all callers
 - [01-03]: Prisma P2002 bubbles from createClient to errorHandler unmodified — avoids duplicate catch logic
 - [01-03]: asyncHandler pattern established in routes for async Express handlers
+- [01-04]: replaceWorkingHours uses full delete+createMany in transaction — simpler, no orphan records
+- [01-04]: getServiceById filters professional list to active:true in application layer (not query)
+- [01-04]: assignService lets P2002 bubble to errorHandler for 409 — consistent with existing pattern
 
 ### Pending Todos
 
@@ -67,5 +70,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-13T21:02:00Z
-Stopped at: Completed 01-03-PLAN.md — Client identity endpoints (CLNT-01, CLNT-02, CLNT-03) complete
+Stopped at: Completed 01-04-PLAN.md — Services catalog (public listing + admin CRUD + professionals + working hours) complete. Phase 1 complete.
 Resume file: None
