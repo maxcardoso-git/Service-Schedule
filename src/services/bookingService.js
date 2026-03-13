@@ -45,7 +45,7 @@ export async function getAvailableSlots(professionalId, serviceId, dateStr) {
   const professional = await prisma.professional.findFirst({
     where: {
       id: professionalId,
-      isActive: true,
+      active: true,
     },
     include: {
       workingHours: {
@@ -71,7 +71,7 @@ export async function getAvailableSlots(professionalId, serviceId, dateStr) {
 
   // Fetch service (must exist and be active)
   const service = await prisma.service.findFirst({
-    where: { id: serviceId, isActive: true },
+    where: { id: serviceId, active: true },
   });
 
   if (!service) {
@@ -180,7 +180,7 @@ export async function createPreReservation({ clientId, professionalId, serviceId
 
   // Fetch service to get durationMin and price
   const service = await prisma.service.findFirst({
-    where: { id: serviceId, isActive: true },
+    where: { id: serviceId, active: true },
   });
   if (!service) {
     throw new NotFoundError('Service not found', 'SERVICE_NOT_FOUND');
