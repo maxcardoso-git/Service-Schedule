@@ -101,7 +101,8 @@ model Booking {
   client       Client          @relation(fields: [clientId], references: [id])
   professional Professional    @relation(fields: [professionalId], references: [id])
   services     BookingService[]
-  payment      Payment?
+  payment          Payment?
+  conversationLink ConversationLink?
 
   @@map("bookings")
 }
@@ -136,6 +137,18 @@ model Payment {
   booking Booking @relation(fields: [bookingId], references: [id])
 
   @@map("payments")
+}
+
+model ConversationLink {
+  id             String   @id @default(uuid()) @db.Uuid
+  bookingId      String   @unique @db.Uuid
+  conversationId String   @db.VarChar(255)
+  createdAt      DateTime @default(now()) @db.Timestamptz
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("conversation_links")
 }
 
 model AdminUser {
