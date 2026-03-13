@@ -9,12 +9,26 @@ import {
   cancelBooking,
   getBookingsByPhone,
 } from '../services/bookingService.js';
+import { getBookingsByConversationId } from '../services/conversationService.js';
 
 const router = Router();
 router.use(apiKeyAuth);
 
 const asyncHandler = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
+
+// CONV-02 — get bookings by conversation session
+router.get('/',
+  validate({
+    query: z.object({
+      conversationId: z.string().min(1),
+    }),
+  }),
+  asyncHandler(async (req, res) => {
+    const bookings = await getBookingsByConversationId(req.query.conversationId);
+    res.json({ data: bookings });
+  })
+);
 
 // SCHD-01, SCHD-06 — availability query
 router.post('/availability',
@@ -41,6 +55,7 @@ router.post('/',
       serviceId: z.string().uuid(),
       startTime: z.string().datetime(),
       idempotencyKey: z.string().max(255).optional(),
+      conversationId: z.string().max(255).optional(),
     }),
   }),
   asyncHandler(async (req, res) => {

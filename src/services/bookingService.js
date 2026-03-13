@@ -4,6 +4,7 @@ import { toZonedTime } from 'date-fns-tz';
 import prisma from '../lib/prisma.js';
 import { generateAvailableSlots, localTimeToUTC } from '../lib/slots.js';
 import { NotFoundError, ValidationError, ConflictError } from '../lib/errors.js';
+import { createConversationLink } from './conversationService.js';
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -164,7 +165,7 @@ export async function getAvailableSlots(professionalId, serviceId, dateStr) {
  * @param {{ clientId: string, professionalId: string, serviceId: string, startTime: string, idempotencyKey?: string }} params
  * @returns {Promise<object>} Created or existing booking
  */
-export async function createPreReservation({ clientId, professionalId, serviceId, startTime, idempotencyKey }) {
+export async function createPreReservation({ clientId, professionalId, serviceId, startTime, idempotencyKey, conversationId }) {
   // Idempotency replay: return existing booking if key already used
   if (idempotencyKey) {
     const existing = await prisma.booking.findUnique({
@@ -212,6 +213,14 @@ export async function createPreReservation({ clientId, professionalId, serviceId
         },
       });
     });
+
+    if (conversationId) {
+      try {
+        await createConversationLink(booking.id, conversationId);
+      } catch (err) {
+        console.warn('Failed to create conversation link', { bookingId: booking.id, error: err.message });
+      }
+    }
 
     return booking;
   } catch (err) {
