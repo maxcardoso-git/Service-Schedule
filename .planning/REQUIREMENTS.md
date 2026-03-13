@@ -118,12 +118,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PYMT-01 | Phase 3 | Complete |
 | PYMT-02 | Phase 3 | Complete |
 | PYMT-03 | Phase 3 | Complete |
-| CONV-01 | Phase 4 | Pending |
-| CONV-02 | Phase 4 | Pending |
+| CONV-01 | Phase 4 | Complete |
+| CONV-02 | Phase 4 | Complete |
 | INFR-01 | Phase 1 | Complete |
 | INFR-02 | Phase 1 | Complete |
 | INFR-03 | Phase 2 | Complete |
-| INFR-04 | Phase 4 | Pending |
+| INFR-04 | Phase 4 | Complete |
 | INFR-05 | Phase 1 | Complete |
 | INFR-06 | Phase 1 | Complete |
 | ADMN-01 | Phase 1 | Complete |
