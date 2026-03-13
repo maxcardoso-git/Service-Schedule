@@ -4,6 +4,9 @@ import helmet from 'helmet';
 import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
 
+import healthRouter from './routes/health.js';
+import { errorHandler } from './middleware/errorHandler.js';
+
 const app = express();
 
 // Security headers
@@ -25,6 +28,12 @@ app.use(
   })
 );
 
-// Routes will be mounted in Plan 02
+// Health check — NOT behind API key auth
+app.use('/api/health', healthRouter);
+
+// Domain routes will be mounted in Plans 03/04
+
+// Global error handler — MUST be last middleware
+app.use(errorHandler);
 
 export default app;
