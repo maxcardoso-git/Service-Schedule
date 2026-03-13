@@ -11,6 +11,7 @@ import servicesRouter from './routes/services.js';
 import adminServicesRouter from './routes/admin/services.js';
 import adminProfessionalsRouter from './routes/admin/professionals.js';
 import bookingsRouter from './routes/bookings.js';
+import paymentsRouter from './routes/payments.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -54,6 +55,9 @@ app.use('/api/admin/professionals', adminProfessionalsRouter);
 
 // Booking scheduling — SCHD-01 through SCHD-08
 app.use('/api/bookings', bookingsRouter);
+
+// Payment engine — PYMT-01 through PYMT-03
+app.use('/api/payments', paymentsRouter);
 
 // Global error handler — MUST be last middleware
 app.use(errorHandler);
