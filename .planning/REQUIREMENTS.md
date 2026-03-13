@@ -115,9 +115,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCHD-06 | Phase 2 | Complete |
 | SCHD-07 | Phase 2 | Complete |
 | SCHD-08 | Phase 2 | Complete |
-| PYMT-01 | Phase 3 | Pending |
-| PYMT-02 | Phase 3 | Pending |
-| PYMT-03 | Phase 3 | Pending |
+| PYMT-01 | Phase 3 | Complete |
+| PYMT-02 | Phase 3 | Complete |
+| PYMT-03 | Phase 3 | Complete |
 | CONV-01 | Phase 4 | Pending |
 | CONV-02 | Phase 4 | Pending |
 | INFR-01 | Phase 1 | Complete |

@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation + Identity + Catalog** - Running Express server with API key auth, client CRUD, and services/professionals catalog
 - [x] **Phase 2: Scheduling Engine** - Slot generation, pre-reservation with TTL, atomic booking with DB-level conflict detection, confirm/cancel lifecycle
-- [ ] **Phase 3: Payment Engine** - Simulated PIX payment intent creation, status tracking, and dev simulation endpoint
+- [x] **Phase 3: Payment Engine** - Simulated PIX payment intent creation, status tracking, and dev simulation endpoint
 - [ ] **Phase 4: Conversation Tracking + Integration Polish** - ConversationId linkage, booking query by conversation, Swagger docs, final API hardening
 
 ## Phase Details
@@ -84,8 +84,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Payment model (PaymentStatus enum, Payment schema with bookingId @unique), service layer (createPixIntent, getPaymentStatus, simulatePaid)
-- [ ] 03-02-PLAN.md — Payment routes (POST /pix, GET /:id/status, POST /:id/simulate-paid), Express app wiring
+- [x] 03-01-PLAN.md — Payment model (PaymentStatus enum, Payment schema with bookingId @unique), service layer (createPixIntent, getPaymentStatus, simulatePaid)
+- [x] 03-02-PLAN.md — Payment routes (POST /pix, GET /:id/status, POST /:id/simulate-paid), Express app wiring
 
 ---
 
@@ -119,5 +119,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Foundation + Identity + Catalog | 4/4 | Complete | 2026-03-13 |
 | 2. Scheduling Engine | 3/3 | Complete | 2026-03-13 |
-| 3. Payment Engine | 0/2 | Not started | - |
+| 3. Payment Engine | 2/2 | Complete | 2026-03-13 |
 | 4. Conversation Tracking + Integration Polish | 0/2 | Not started | - |
