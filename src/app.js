@@ -6,6 +6,7 @@ import { rateLimit } from 'express-rate-limit';
 
 import healthRouter from './routes/health.js';
 import adminAuthRouter from './routes/admin/auth.js';
+import clientRouter from './routes/clients.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -35,7 +36,8 @@ app.use('/api/health', healthRouter);
 // Admin auth — NOT behind API key auth (it IS the auth mechanism)
 app.use('/api/admin/auth', adminAuthRouter);
 
-// Domain routes will be mounted in Plans 03/04
+// Client identity routes — CLNT-01, CLNT-02, CLNT-03
+app.use('/api/clients', clientRouter);
 
 // Global error handler — MUST be last middleware
 app.use(errorHandler);
