@@ -5,6 +5,7 @@ import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
 
 import healthRouter from './routes/health.js';
+import adminAuthRouter from './routes/admin/auth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -30,6 +31,9 @@ app.use(
 
 // Health check — NOT behind API key auth
 app.use('/api/health', healthRouter);
+
+// Admin auth — NOT behind API key auth (it IS the auth mechanism)
+app.use('/api/admin/auth', adminAuthRouter);
 
 // Domain routes will be mounted in Plans 03/04
 
