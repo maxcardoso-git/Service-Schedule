@@ -100,13 +100,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLNT-01 | Phase 1 | Pending |
-| CLNT-02 | Phase 1 | Pending |
-| CLNT-03 | Phase 1 | Pending |
-| SRVC-01 | Phase 1 | Pending |
-| SRVC-02 | Phase 1 | Pending |
-| SRVC-03 | Phase 1 | Pending |
-| SRVC-04 | Phase 1 | Pending |
+| CLNT-01 | Phase 1 | Complete |
+| CLNT-02 | Phase 1 | Complete |
+| CLNT-03 | Phase 1 | Complete |
+| SRVC-01 | Phase 1 | Complete |
+| SRVC-02 | Phase 1 | Complete |
+| SRVC-03 | Phase 1 | Complete |
+| SRVC-04 | Phase 1 | Complete |
 | SCHD-01 | Phase 2 | Pending |
 | SCHD-02 | Phase 2 | Pending |
 | SCHD-03 | Phase 2 | Pending |
@@ -120,14 +120,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PYMT-03 | Phase 3 | Pending |
 | CONV-01 | Phase 4 | Pending |
 | CONV-02 | Phase 4 | Pending |
-| INFR-01 | Phase 1 | Pending |
-| INFR-02 | Phase 1 | Pending |
+| INFR-01 | Phase 1 | Complete |
+| INFR-02 | Phase 1 | Complete |
 | INFR-03 | Phase 2 | Pending |
 | INFR-04 | Phase 4 | Pending |
-| INFR-05 | Phase 1 | Pending |
-| INFR-06 | Phase 1 | Pending |
-| ADMN-01 | Phase 1 | Pending |
-| ADMN-02 | Phase 1 | Pending |
+| INFR-05 | Phase 1 | Complete |
+| INFR-06 | Phase 1 | Complete |
+| ADMN-01 | Phase 1 | Complete |
+| ADMN-02 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 28 total

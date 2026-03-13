@@ -12,7 +12,7 @@ This platform exposes a REST API backend enabling OrchestratorAI agents to auton
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation + Identity + Catalog** - Running Express server with API key auth, client CRUD, and services/professionals catalog
+- [x] **Phase 1: Foundation + Identity + Catalog** - Running Express server with API key auth, client CRUD, and services/professionals catalog
 - [ ] **Phase 2: Scheduling Engine** - Slot generation, pre-reservation with TTL, atomic booking with DB-level conflict detection, confirm/cancel lifecycle
 - [ ] **Phase 3: Payment Engine** - Simulated PIX payment intent creation, status tracking, and dev simulation endpoint
 - [ ] **Phase 4: Conversation Tracking + Integration Polish** - ConversationId linkage, booking query by conversation, Swagger docs, final API hardening
@@ -37,10 +37,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 4 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Project scaffold (Express app, Prisma + PostgreSQL, environment config, TIMESTAMPTZ strategy, shared utilities)
-- [ ] 01-02-PLAN.md — API infrastructure (API key middleware, JWT admin auth, Zod validation, structured error envelope, health check, seed data)
-- [ ] 01-03-PLAN.md — Identity & Clients domain (phone lookup, registration, appointment history endpoint)
-- [ ] 01-04-PLAN.md — Services Catalog domain (service listing, admin CRUD, professional management, working hours)
+- [x] 01-01-PLAN.md — Project scaffold (Express app, Prisma + PostgreSQL, environment config, TIMESTAMPTZ strategy, shared utilities)
+- [x] 01-02-PLAN.md — API infrastructure (API key middleware, JWT admin auth, Zod validation, structured error envelope, health check, seed data)
+- [x] 01-03-PLAN.md — Identity & Clients domain (phone lookup, registration, appointment history endpoint)
+- [x] 01-04-PLAN.md — Services Catalog domain (service listing, admin CRUD, professional management, working hours)
 
 ---
 
@@ -118,7 +118,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + Identity + Catalog | 0/4 | Not started | - |
+| 1. Foundation + Identity + Catalog | 4/4 | Complete | 2026-03-13 |
 | 2. Scheduling Engine | 0/4 | Not started | - |
 | 3. Payment Engine | 0/2 | Not started | - |
 | 4. Conversation Tracking + Integration Polish | 0/2 | Not started | - |
