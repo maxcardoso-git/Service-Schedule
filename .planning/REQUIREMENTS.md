@@ -100,39 +100,40 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLNT-01 | — | — |
-| CLNT-02 | — | — |
-| CLNT-03 | — | — |
-| SRVC-01 | — | — |
-| SRVC-02 | — | — |
-| SRVC-03 | — | — |
-| SRVC-04 | — | — |
-| SCHD-01 | — | — |
-| SCHD-02 | — | — |
-| SCHD-03 | — | — |
-| SCHD-04 | — | — |
-| SCHD-05 | — | — |
-| SCHD-06 | — | — |
-| SCHD-07 | — | — |
-| SCHD-08 | — | — |
-| PYMT-01 | — | — |
-| PYMT-02 | — | — |
-| PYMT-03 | — | — |
-| CONV-01 | — | — |
-| CONV-02 | — | — |
-| INFR-01 | — | — |
-| INFR-02 | — | — |
-| INFR-03 | — | — |
-| INFR-04 | — | — |
-| INFR-05 | — | — |
-| INFR-06 | — | — |
-| ADMN-01 | — | — |
-| ADMN-02 | — | — |
+| CLNT-01 | Phase 1 | Pending |
+| CLNT-02 | Phase 1 | Pending |
+| CLNT-03 | Phase 1 | Pending |
+| SRVC-01 | Phase 1 | Pending |
+| SRVC-02 | Phase 1 | Pending |
+| SRVC-03 | Phase 1 | Pending |
+| SRVC-04 | Phase 1 | Pending |
+| SCHD-01 | Phase 2 | Pending |
+| SCHD-02 | Phase 2 | Pending |
+| SCHD-03 | Phase 2 | Pending |
+| SCHD-04 | Phase 2 | Pending |
+| SCHD-05 | Phase 2 | Pending |
+| SCHD-06 | Phase 2 | Pending |
+| SCHD-07 | Phase 2 | Pending |
+| SCHD-08 | Phase 2 | Pending |
+| PYMT-01 | Phase 3 | Pending |
+| PYMT-02 | Phase 3 | Pending |
+| PYMT-03 | Phase 3 | Pending |
+| CONV-01 | Phase 4 | Pending |
+| CONV-02 | Phase 4 | Pending |
+| INFR-01 | Phase 1 | Pending |
+| INFR-02 | Phase 1 | Pending |
+| INFR-03 | Phase 2 | Pending |
+| INFR-04 | Phase 4 | Pending |
+| INFR-05 | Phase 1 | Pending |
+| INFR-06 | Phase 1 | Pending |
+| ADMN-01 | Phase 1 | Pending |
+| ADMN-02 | Phase 1 | Pending |
 
 **Coverage:**
 - v1 requirements: 28 total
-- Mapped to phases: 0/28
-- Unmapped: 28
+- Mapped to phases: 28/28
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-13*
+*Traceability updated: 2026-03-13*
