@@ -7,6 +7,9 @@ import { rateLimit } from 'express-rate-limit';
 import healthRouter from './routes/health.js';
 import adminAuthRouter from './routes/admin/auth.js';
 import clientRouter from './routes/clients.js';
+import servicesRouter from './routes/services.js';
+import adminServicesRouter from './routes/admin/services.js';
+import adminProfessionalsRouter from './routes/admin/professionals.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -38,6 +41,15 @@ app.use('/api/admin/auth', adminAuthRouter);
 
 // Client identity routes — CLNT-01, CLNT-02, CLNT-03
 app.use('/api/clients', clientRouter);
+
+// Services catalog — SRVC-01 (public listing)
+app.use('/api/services', servicesRouter);
+
+// Admin services — SRVC-02 (CRUD)
+app.use('/api/admin/services', adminServicesRouter);
+
+// Admin professionals — SRVC-03, SRVC-04 (profiles, assignments, working hours)
+app.use('/api/admin/professionals', adminProfessionalsRouter);
 
 // Global error handler — MUST be last middleware
 app.use(errorHandler);
