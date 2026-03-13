@@ -81,11 +81,11 @@ Plans:
   2. An AI agent calling `GET /api/payments/:id/status` receives the current status (PENDING / PAID / CANCELLED) of the payment
   3. A developer calling `POST /api/payments/:id/simulate-paid` transitions the payment to PAID status, verifiable via the status endpoint
 
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 03-01: Payment model (Payment schema, price snapshot field, status enum, foreign key to Booking), PIX intent endpoint (simulated QR generation)
-- [ ] 03-02: Payment status endpoint, simulate-paid endpoint, payment-booking state linkage
+- [ ] 03-01-PLAN.md — Payment model (PaymentStatus enum, Payment schema with bookingId @unique), service layer (createPixIntent, getPaymentStatus, simulatePaid)
+- [ ] 03-02-PLAN.md — Payment routes (POST /pix, GET /:id/status, POST /:id/simulate-paid), Express app wiring
 
 ---
 
