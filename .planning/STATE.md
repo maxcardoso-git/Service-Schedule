@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 ## Current Position
 
 Phase: 2 of 4 (Scheduling Engine)
-Plan: 1 of 6 in current phase
+Plan: 2 of 6 in current phase
 Status: In progress
-Last activity: 2026-03-13 — Completed 02-01-PLAN.md (Scheduling Engine Foundation)
+Last activity: 2026-03-13 — Completed 02-02-PLAN.md (Booking Service Layer)
 
-Progress: [█████░░░░░] 50% (5/10 plans complete)
+Progress: [██████░░░░] 60% (6/10 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: ~5 min
-- Total execution time: 28 min
+- Total execution time: 29 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | Phase 1 | 4/4 | 16 min | 4 min |
-| Phase 2 | 1/6 | 12 min | 12 min |
+| Phase 2 | 2/6 | 13 min | 6.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (4 min), 01-02 (4 min), 01-03 (5 min), 01-04 (3 min), 02-01 (12 min)
-- Trend: 02-01 longer due to baseline migration setup (one-time cost)
+- Last 5 plans: 01-02 (4 min), 01-03 (5 min), 01-04 (3 min), 02-01 (12 min), 02-02 (1 min)
+- Trend: 02-02 very fast — straightforward implementation with clear spec and no migration work
 
 *Updated after each plan completion*
 
@@ -61,6 +61,9 @@ Recent decisions affecting current work:
 - [02-01]: Column names in migrations are camelCase (professionalId, startTime) because schema has no @map attributes — db push preserved camelCase field names
 - [02-01]: Prisma migrate workflow established via baseline migration — all future schema changes via migrate dev (not db push)
 - [02-01]: generateAvailableSlots uses addMinutes cursor loop with slotEnd > workEnd overrun guard — pure function, no DB
+- [02-02]: confirmBooking clears expiresAt (sets null) on CONFIRMED — prevents TTL expiry cron from cancelling confirmed bookings
+- [02-02]: idempotency key checked via findUnique BEFORE insert; P2002 catch is secondary safety net
+- [02-02]: P2002 target inspection uses Array.isArray + join before includes() to safely handle both array and string formats
 
 ### Pending Todos
 
@@ -68,11 +71,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Phase 2]: `SELECT FOR UPDATE SKIP LOCKED` requires Prisma `$queryRaw` — validate column quoting before writing booking service (camelCase column names in raw SQL must be double-quoted)
-- [Phase 2]: Partial unique index `WHERE status IN (...)` is live — blocker resolved (02-01 complete)
+- [Phase 2]: `SELECT FOR UPDATE SKIP LOCKED` requires Prisma `$queryRaw` — RESOLVED in 02-02 (implemented and verified)
 
 ## Session Continuity
 
-Last session: 2026-03-13T22:17:00Z
-Stopped at: Completed 02-01-PLAN.md (Scheduling Engine Foundation — deps + partial index + slots.js)
+Last session: 2026-03-13T22:13:28Z
+Stopped at: Completed 02-02-PLAN.md (Booking Service Layer — all 5 scheduling functions)
 Resume file: None
