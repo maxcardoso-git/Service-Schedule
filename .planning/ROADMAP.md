@@ -25,7 +25,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Depends on**: Nothing (first phase)
 
-**Requirements**: INFR-01, INFR-02, INFR-03, INFR-04, INFR-05, INFR-06, ADMN-01, ADMN-02, CLNT-01, CLNT-02, CLNT-03, SRVC-01, SRVC-02, SRVC-03, SRVC-04
+**Requirements**: INFR-01, INFR-02, INFR-05, INFR-06, ADMN-01, ADMN-02, CLNT-01, CLNT-02, CLNT-03, SRVC-01, SRVC-02, SRVC-03, SRVC-04
 
 **Success Criteria** (what must be TRUE):
   1. An AI agent calling `GET /api/clients/by-phone/:phone` receives a client object or a structured 404 with an actionable error code
@@ -34,13 +34,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. An AI agent calling `GET /api/services` receives a list of active services with name, duration, and price
   5. An admin can create/edit/deactivate services and assign or remove professionals via admin endpoints authenticated with JWT
 
-**Plans**: TBD
+**Plans:** 4 plans
 
 Plans:
-- [ ] 01-01: Project scaffold (Express app, Prisma + PostgreSQL, environment config, TIMESTAMPTZ strategy, folder structure)
-- [ ] 01-02: API infrastructure (API key middleware, JWT admin auth, Zod request validation, structured error envelope, health check, seed data)
-- [ ] 01-03: Identity & Clients domain (client model, phone lookup, registration, appointment history endpoint)
-- [ ] 01-04: Services Catalog domain (service model, professional model, working hours model, service-professional many-to-many, CRUD endpoints)
+- [ ] 01-01-PLAN.md — Project scaffold (Express app, Prisma + PostgreSQL, environment config, TIMESTAMPTZ strategy, shared utilities)
+- [ ] 01-02-PLAN.md — API infrastructure (API key middleware, JWT admin auth, Zod validation, structured error envelope, health check, seed data)
+- [ ] 01-03-PLAN.md — Identity & Clients domain (phone lookup, registration, appointment history endpoint)
+- [ ] 01-04-PLAN.md — Services Catalog domain (service listing, admin CRUD, professional management, working hours)
 
 ---
 
