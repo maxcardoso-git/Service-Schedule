@@ -101,6 +101,7 @@ model Booking {
   client       Client          @relation(fields: [clientId], references: [id])
   professional Professional    @relation(fields: [professionalId], references: [id])
   services     BookingService[]
+  payment      Payment?
 
   @@map("bookings")
 }
@@ -115,6 +116,26 @@ model BookingService {
 
   @@unique([bookingId, serviceId])
   @@map("booking_services")
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+model Payment {
+  id         String        @id @default(uuid()) @db.Uuid
+  bookingId  String        @unique @db.Uuid
+  amount     Decimal       @db.Decimal(10, 2)
+  status     PaymentStatus @default(PENDING)
+  pixPayload String        @db.Text
+  createdAt  DateTime      @default(now()) @db.Timestamptz
+  updatedAt  DateTime      @updatedAt @db.Timestamptz
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@map("payments")
 }
 
 model AdminUser {
