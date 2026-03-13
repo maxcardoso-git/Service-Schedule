@@ -95,25 +95,25 @@ Plans:
 
 **Depends on**: Phase 2 (needs booking records to link; can overlap with Phase 3)
 
-**Requirements**: CONV-01, CONV-02
+**Requirements**: CONV-01, CONV-02, INFR-04
 
 **Success Criteria** (what must be TRUE):
   1. A booking created with an optional `conversationId` stores it; the field does not block booking creation if absent or if conversation tracking fails
   2. An AI agent calling `GET /api/bookings?conversationId=:id` receives all bookings linked to that OrchestratorAI session
   3. The Swagger/OpenAPI documentation at `/api-docs` accurately describes all endpoints, request schemas, and response shapes, enabling a developer to understand the full API surface without reading source code
 
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 04-01: Conversation tracking (optional `conversationId` on Booking, `ConversationLink` table decoupled from booking model, query endpoint)
-- [ ] 04-02: API documentation (Swagger/OpenAPI at `/api-docs`, final error code review, integration smoke test against OrchestratorAI capability mock list)
+- [ ] 04-01-PLAN.md — ConversationLink model, migration, fire-and-forget link creation in bookingService, GET /api/bookings?conversationId query endpoint
+- [ ] 04-02-PLAN.md — Swagger/OpenAPI setup (swagger-jsdoc + swagger-ui-express), @openapi annotations on all route files, /api-docs endpoint
 
 ---
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
