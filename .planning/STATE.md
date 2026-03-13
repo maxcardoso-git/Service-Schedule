@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 ## Current Position
 
 Phase: 2 of 4 (Scheduling Engine)
-Plan: 2 of 6 in current phase
+Plan: 3 of 6 in current phase
 Status: In progress
-Last activity: 2026-03-13 — Completed 02-02-PLAN.md (Booking Service Layer)
+Last activity: 2026-03-13 — Completed 02-03-PLAN.md (Booking HTTP Endpoints and Cron Cleanup)
 
-Progress: [██████░░░░] 60% (6/10 plans complete)
+Progress: [███████░░░] 70% (7/10 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: ~5 min
-- Total execution time: 29 min
+- Total plans completed: 7
+- Average duration: ~4.6 min
+- Total execution time: 32 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | Phase 1 | 4/4 | 16 min | 4 min |
-| Phase 2 | 2/6 | 13 min | 6.5 min |
+| Phase 2 | 3/6 | 16 min | 5.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (4 min), 01-03 (5 min), 01-04 (3 min), 02-01 (12 min), 02-02 (1 min)
-- Trend: 02-02 very fast — straightforward implementation with clear spec and no migration work
+- Last 5 plans: 01-03 (5 min), 01-04 (3 min), 02-01 (12 min), 02-02 (1 min), 02-03 (3 min)
+- Trend: 02-03 fast — straightforward HTTP wiring with clear service layer already in place
 
 *Updated after each plan completion*
 
@@ -64,6 +64,9 @@ Recent decisions affecting current work:
 - [02-02]: confirmBooking clears expiresAt (sets null) on CONFIRMED — prevents TTL expiry cron from cancelling confirmed bookings
 - [02-02]: idempotency key checked via findUnique BEFORE insert; P2002 catch is secondary safety net
 - [02-02]: P2002 target inspection uses Array.isArray + join before includes() to safely handle both array and string formats
+- [02-03]: GET /by-phone/:phone uses path param (not query) — consistent with clients.js pattern
+- [02-03]: startExpiryJob called inside app.listen callback so cron only starts after server is bound
+- [02-03]: Cron jobs live in src/jobs/, exported as start*Job() functions
 
 ### Pending Todos
 
@@ -75,6 +78,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T22:13:28Z
-Stopped at: Completed 02-02-PLAN.md (Booking Service Layer — all 5 scheduling functions)
+Last session: 2026-03-13T22:19:10Z
+Stopped at: Completed 02-03-PLAN.md (Booking HTTP Endpoints and Cron Cleanup)
 Resume file: None
