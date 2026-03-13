@@ -19,9 +19,43 @@ const asyncHandler = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
 
 /**
- * GET /api/clients/by-phone/:phone
- * Look up a client by phone number.
- * Returns 200 { data: client } or 404 CLIENT_NOT_FOUND.
+ * @openapi
+ * /api/clients/by-phone/{phone}:
+ *   get:
+ *     tags: [Clients]
+ *     summary: Look up client by phone number
+ *     parameters:
+ *       - in: path
+ *         name: phone
+ *         required: true
+ *         schema:
+ *           type: string
+ *           minLength: 8
+ *           maxLength: 20
+ *         description: Client phone number
+ *     responses:
+ *       200:
+ *         description: Client found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     name:
+ *                       type: string
+ *                     phone:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                       nullable: true
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
  */
 router.get(
   '/by-phone/:phone',
@@ -37,9 +71,55 @@ router.get(
 );
 
 /**
- * POST /api/clients
- * Register a new client.
- * Returns 201 { data: client } or 409 CONFLICT on duplicate phone.
+ * @openapi
+ * /api/clients:
+ *   post:
+ *     tags: [Clients]
+ *     summary: Register a new client
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, phone]
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 200
+ *               phone:
+ *                 type: string
+ *                 minLength: 8
+ *                 maxLength: 20
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       201:
+ *         description: Client created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     name:
+ *                       type: string
+ *                     phone:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                       nullable: true
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       409:
+ *         $ref: '#/components/responses/Conflict'
  */
 router.post(
   '/',
@@ -57,9 +137,33 @@ router.post(
 );
 
 /**
- * GET /api/clients/:id/appointments
- * Retrieve appointment history for a client.
- * Returns 200 { data: [...] } (empty array if no bookings) or 404 if client not found.
+ * @openapi
+ * /api/clients/{id}/appointments:
+ *   get:
+ *     tags: [Clients]
+ *     summary: Get appointment history for a client
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Client ID
+ *     responses:
+ *       200:
+ *         description: List of client appointments
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
  */
 router.get(
   '/:id/appointments',

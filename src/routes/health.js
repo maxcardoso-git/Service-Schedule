@@ -4,9 +4,30 @@ import prisma from '../lib/prisma.js';
 const router = Router();
 
 /**
- * GET /api/health
- * Returns API status and database connectivity check.
- * Always returns 200 — never crashes on DB failure.
+ * @openapi
+ * /api/health:
+ *   get:
+ *     tags: [Health]
+ *     summary: API health check
+ *     description: Returns API status and database connectivity. Always returns 200.
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: Health status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: ok
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                 database:
+ *                   type: string
+ *                   enum: [connected, disconnected]
  */
 router.get('/', async (req, res) => {
   let database = 'connected';

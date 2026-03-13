@@ -15,9 +15,35 @@ const asyncHandler = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
 
 /**
- * GET /api/services
- * List all active services.
- * Returns 200 { data: [...] }.
+ * @openapi
+ * /api/services:
+ *   get:
+ *     tags: [Services]
+ *     summary: List all active services
+ *     responses:
+ *       200:
+ *         description: Array of active services with assigned professionals
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       name:
+ *                         type: string
+ *                       durationMinutes:
+ *                         type: integer
+ *                       price:
+ *                         type: number
+ *                       active:
+ *                         type: boolean
  */
 router.get(
   '/',
@@ -28,9 +54,47 @@ router.get(
 );
 
 /**
- * GET /api/services/:id
- * Get a service by ID, including assigned professionals.
- * Returns 200 { data: service } or 404 SERVICE_NOT_FOUND.
+ * @openapi
+ * /api/services/{id}:
+ *   get:
+ *     tags: [Services]
+ *     summary: Get service by ID with assigned professionals
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Service ID
+ *     responses:
+ *       200:
+ *         description: Service details with professionals
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     name:
+ *                       type: string
+ *                     durationMinutes:
+ *                       type: integer
+ *                     price:
+ *                       type: number
+ *                     active:
+ *                       type: boolean
+ *                     professionals:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
  */
 router.get(
   '/:id',
