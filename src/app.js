@@ -10,6 +10,7 @@ import clientRouter from './routes/clients.js';
 import servicesRouter from './routes/services.js';
 import adminServicesRouter from './routes/admin/services.js';
 import adminProfessionalsRouter from './routes/admin/professionals.js';
+import bookingsRouter from './routes/bookings.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -50,6 +51,9 @@ app.use('/api/admin/services', adminServicesRouter);
 
 // Admin professionals — SRVC-03, SRVC-04 (profiles, assignments, working hours)
 app.use('/api/admin/professionals', adminProfessionalsRouter);
+
+// Booking scheduling — SCHD-01 through SCHD-08
+app.use('/api/bookings', bookingsRouter);
 
 // Global error handler — MUST be last middleware
 app.use(errorHandler);
