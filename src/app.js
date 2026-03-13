@@ -13,6 +13,7 @@ import adminProfessionalsRouter from './routes/admin/professionals.js';
 import bookingsRouter from './routes/bookings.js';
 import paymentsRouter from './routes/payments.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { swaggerSpec, serve, setup } from './swagger.js';
 
 const app = express();
 
@@ -58,6 +59,9 @@ app.use('/api/bookings', bookingsRouter);
 
 // Payment engine — PYMT-01 through PYMT-03
 app.use('/api/payments', paymentsRouter);
+
+// Swagger API documentation — NOT behind API key auth
+app.use('/api-docs', serve, setup(swaggerSpec));
 
 // Global error handler — MUST be last middleware
 app.use(errorHandler);

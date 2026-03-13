@@ -30,6 +30,8 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "node-cron": "^4.2.1",
+    "swagger-jsdoc": "^6.2.1",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.0",
     "winston": "^3.19.0",
     "zod": "^3.25.76"
