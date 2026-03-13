@@ -13,7 +13,7 @@ This platform exposes a REST API backend enabling OrchestratorAI agents to auton
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation + Identity + Catalog** - Running Express server with API key auth, client CRUD, and services/professionals catalog
-- [ ] **Phase 2: Scheduling Engine** - Slot generation, pre-reservation with TTL, atomic booking with DB-level conflict detection, confirm/cancel lifecycle
+- [x] **Phase 2: Scheduling Engine** - Slot generation, pre-reservation with TTL, atomic booking with DB-level conflict detection, confirm/cancel lifecycle
 - [ ] **Phase 3: Payment Engine** - Simulated PIX payment intent creation, status tracking, and dev simulation endpoint
 - [ ] **Phase 4: Conversation Tracking + Integration Polish** - ConversationId linkage, booking query by conversation, Swagger docs, final API hardening
 
@@ -62,9 +62,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Partial unique index migration, dependency install (date-fns-tz, node-cron), pure slot generation helper
-- [ ] 02-02-PLAN.md — Booking service layer (availability query, pre-reservation with idempotency, confirm/cancel with row locking, phone lookup)
-- [ ] 02-03-PLAN.md — Booking routes, Zod validation, cron cleanup job, Express wiring
+- [x] 02-01-PLAN.md — Partial unique index migration, dependency install (date-fns-tz, node-cron), pure slot generation helper
+- [x] 02-02-PLAN.md — Booking service layer (availability query, pre-reservation with idempotency, confirm/cancel with row locking, phone lookup)
+- [x] 02-03-PLAN.md — Booking routes, Zod validation, cron cleanup job, Express wiring
 
 ---
 
@@ -118,6 +118,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation + Identity + Catalog | 4/4 | Complete | 2026-03-13 |
-| 2. Scheduling Engine | 0/3 | Not started | - |
+| 2. Scheduling Engine | 3/3 | Complete | 2026-03-13 |
 | 3. Payment Engine | 0/2 | Not started | - |
 | 4. Conversation Tracking + Integration Polish | 0/2 | Not started | - |
