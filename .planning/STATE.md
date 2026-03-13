@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 ## Current Position
 
 Phase: 3 of 4 (Payment Engine)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-03-13 — Completed 03-01-PLAN.md (Payment Schema & Service)
+Last activity: 2026-03-13 — Completed 03-02-PLAN.md (Payment HTTP Endpoints)
 
-Progress: [████████░░] 73% (8/11 plans complete)
+Progress: [█████████░] 82% (9/11 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: ~4.3 min
-- Total execution time: 34 min
+- Total plans completed: 9
+- Average duration: ~4.1 min
+- Total execution time: 37 min
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [████████░░] 73% (8/11 plans complete)
 |-------|-------|-------|----------|
 | Phase 1 | 4/4 | 16 min | 4 min |
 | Phase 2 | 3/3 | 16 min | 5.3 min |
-| Phase 3 | 1/3 | 2 min | 2 min |
+| Phase 3 | 2/3 | 5 min | 2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-04 (3 min), 02-01 (12 min), 02-02 (1 min), 02-03 (3 min), 03-01 (2 min)
+- Last 5 plans: 02-01 (12 min), 02-02 (1 min), 02-03 (3 min), 03-01 (2 min), 03-02 (3 min)
 - Trend: steady
 
 *Updated after each plan completion*
@@ -71,6 +71,8 @@ Recent decisions affecting current work:
 - [03-01]: Payment amount sourced from BookingService.price (snapshot), NOT Service.price — preserves historical price at booking time
 - [03-01]: P2002 caught in createPixIntent and re-thrown as ConflictError — race condition safety for concurrent payment creation
 - [03-01]: PIX-SIM payload format: PIX-SIM:txid={32-char-uppercase-uuid}:booking={bookingId}:amount={amount}
+- [03-02]: POST /:id/simulate-paid uses POST (not PATCH) — trigger action, not partial resource update
+- [03-02]: payments.js mirrors bookings.js exactly: Router, apiKeyAuth at top, inline asyncHandler, validate() with Zod
 
 ### Pending Todos
 
@@ -82,6 +84,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-13T22:52:13Z
-Stopped at: Completed 03-01-PLAN.md (Payment Schema & Service)
+Last session: 2026-03-13T22:57:30Z
+Stopped at: Completed 03-02-PLAN.md (Payment HTTP Endpoints)
 Resume file: None
