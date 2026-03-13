@@ -50,22 +50,21 @@ Plans:
 
 **Depends on**: Phase 1
 
-**Requirements**: SCHD-01, SCHD-02, SCHD-03, SCHD-04, SCHD-05, SCHD-06, SCHD-07, SCHD-08
+**Requirements**: SCHD-01, SCHD-02, SCHD-03, SCHD-04, SCHD-05, SCHD-06, SCHD-07, SCHD-08, INFR-03
 
 **Success Criteria** (what must be TRUE):
-  1. An AI agent calling `GET /api/schedule/slots` receives calculated (not stored) available slots for a given date, service, and professional, with `NOT_WORKING_DAY` or `FULLY_BOOKED` reason codes when no slots exist and a next-available suggestion
-  2. An AI agent calling `POST /api/bookings/pre-reserve` with an idempotency key creates a 5-minute hold; a second call with the same key returns the existing hold without creating a duplicate
-  3. An AI agent calling `POST /api/bookings/:id/confirm` transitions the booking from PRE_RESERVED to CONFIRMED; the slot no longer appears in availability queries
+  1. An AI agent calling `POST /api/bookings/availability` receives calculated (not stored) available slots for a given date, service, and professional, with `NOT_WORKING` or `FULLY_BOOKED` reason codes when no slots exist and a next-available suggestion
+  2. An AI agent calling `POST /api/bookings` with an idempotency key creates a 5-minute hold; a second call with the same key returns the existing hold without creating a duplicate
+  3. An AI agent calling `PATCH /api/bookings/:id/confirm` transitions the booking from PRE_RESERVED to CONFIRMED; the slot no longer appears in availability queries
   4. Two simultaneous booking attempts for the same slot result in exactly one success and one conflict error — enforced by the PostgreSQL partial unique index
   5. Expired pre-reservations (past their `expiresAt`) are excluded from availability queries without waiting for a cleanup job
 
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 02-01: Schema additions (Booking model with `BookingService` one-to-many, partial unique index DDL, `expiresAt` field, composite indexes)
-- [ ] 02-02: Slot generation algorithm (calculate slots from working hours minus active bookings, end-of-day boundary, duration overlap math)
-- [ ] 02-03: Pre-reservation endpoint (TTL creation, idempotency key enforcement, `SELECT FOR UPDATE SKIP LOCKED` transaction)
-- [ ] 02-04: Booking lifecycle (confirm endpoint, cancel endpoint, booking lookup by client phone, node-cron cleanup sweep)
+- [ ] 02-01-PLAN.md — Partial unique index migration, dependency install (date-fns-tz, node-cron), pure slot generation helper
+- [ ] 02-02-PLAN.md — Booking service layer (availability query, pre-reservation with idempotency, confirm/cancel with row locking, phone lookup)
+- [ ] 02-03-PLAN.md — Booking routes, Zod validation, cron cleanup job, Express wiring
 
 ---
 
@@ -119,6 +118,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation + Identity + Catalog | 4/4 | Complete | 2026-03-13 |
-| 2. Scheduling Engine | 0/4 | Not started | - |
+| 2. Scheduling Engine | 0/3 | Not started | - |
 | 3. Payment Engine | 0/2 | Not started | - |
 | 4. Conversation Tracking + Integration Polish | 0/2 | Not started | - |
