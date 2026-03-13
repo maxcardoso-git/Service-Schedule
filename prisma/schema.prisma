@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(200)
+  phone     String   @unique @db.VarChar(20)
+  email     String?  @db.VarChar(255)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  bookings Booking[]
+
+  @@map("clients")
+}
+
+model Service {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(200)
+  description String?  @db.Text
+  durationMin Int
+  price       Decimal  @db.Decimal(10, 2)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+
+  professionals   ProfessionalService[]
+  bookingServices BookingService[]
+
+  @@map("services")
+}
+
+model Professional {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(200)
+  email     String?  @db.VarChar(255)
+  phone     String?  @db.VarChar(20)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  services     ProfessionalService[]
+  workingHours WorkingHours[]
+  bookings     Booking[]
+
+  @@map("professionals")
+}
+
+model ProfessionalService {
+  id             String       @id @default(uuid()) @db.Uuid
+  professionalId String       @db.Uuid
+  serviceId      String       @db.Uuid
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  service        Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now()) @db.Timestamptz
+
+  @@unique([professionalId, serviceId])
+  @@map("professional_services")
+}
+
+model WorkingHours {
+  id             String       @id @default(uuid()) @db.Uuid
+  professionalId String       @db.Uuid
+  dayOfWeek      Int
+  startTime      String       @db.VarChar(5)
+  endTime        String       @db.VarChar(5)
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now()) @db.Timestamptz
+
+  @@unique([professionalId, dayOfWeek, startTime])
+  @@map("working_hours")
+}
+
+enum BookingStatus {
+  PRE_RESERVED
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+model Booking {
+  id             String        @id @default(uuid()) @db.Uuid
+  clientId       String        @db.Uuid
+  professionalId String        @db.Uuid
+  startTime      DateTime      @db.Timestamptz
+  endTime        DateTime      @db.Timestamptz
+  status         BookingStatus @default(PRE_RESERVED)
+  idempotencyKey String?       @unique @db.VarChar(255)
+  expiresAt      DateTime?     @db.Timestamptz
+  notes          String?       @db.Text
+  createdAt      DateTime      @default(now()) @db.Timestamptz
+  updatedAt      DateTime      @updatedAt @db.Timestamptz
+
+  client       Client          @relation(fields: [clientId], references: [id])
+  professional Professional    @relation(fields: [professionalId], references: [id])
+  services     BookingService[]
+
+  @@map("bookings")
+}
+
+model BookingService {
+  id        String  @id @default(uuid()) @db.Uuid
+  bookingId String  @db.Uuid
+  serviceId String  @db.Uuid
+  price     Decimal @db.Decimal(10, 2)
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id])
+
+  @@unique([bookingId, serviceId])
+  @@map("booking_services")
+}
