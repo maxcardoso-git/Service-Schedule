@@ -2,6 +2,32 @@ import prisma from '../lib/prisma.js';
 import { NotFoundError, ValidationError } from '../lib/errors.js';
 
 /**
+ * List all professionals (active and inactive), ordered by name ascending.
+ * Includes each professional's assigned services with service name.
+ * @returns {Promise<Array>} Array of professional records.
+ */
+export async function listAllProfessionals() {
+  return prisma.professional.findMany({
+    orderBy: { name: 'asc' },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      active: true,
+      createdAt: true,
+      services: {
+        include: {
+          service: {
+            select: { id: true, name: true },
+          },
+        },
+      },
+    },
+  });
+}
+
+/**
  * Validate that a string matches "HH:MM" 24-hour format.
  * @param {string} time
  * @returns {boolean}

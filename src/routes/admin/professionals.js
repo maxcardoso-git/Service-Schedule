@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { adminAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import {
+  listAllProfessionals,
   getProfessionalById,
   createProfessional,
   updateProfessional,
@@ -36,6 +37,19 @@ const workingHoursSchema = z.object({
     })
   ),
 });
+
+/**
+ * GET /api/admin/professionals
+ * List all professionals (active + inactive) ordered by name, with their assigned services.
+ * Returns 200 { data: professional[] }.
+ */
+router.get(
+  '/',
+  asyncHandler(async (req, res) => {
+    const professionals = await listAllProfessionals();
+    res.json({ data: professionals });
+  })
+);
 
 /**
  * GET /api/admin/professionals/:id
