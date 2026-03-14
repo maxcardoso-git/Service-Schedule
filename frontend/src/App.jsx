@@ -12,6 +12,7 @@ import Users from '@/pages/admin/Users';
 import Services from '@/pages/admin/Services';
 import Professionals from '@/pages/admin/Professionals';
 import Calendar from '@/pages/admin/Calendar';
+import Clients from '@/pages/admin/Clients';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -65,6 +66,10 @@ const router = createBrowserRouter([
               {
                 path: '/admin/calendar',
                 element: <Calendar />,
+              },
+              {
+                path: '/admin/clients',
+                element: <Clients />,
               },
             ],
           },
