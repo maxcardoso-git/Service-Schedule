@@ -8,6 +8,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import Login from '@/pages/Login';
 import NotFound from '@/pages/NotFound';
 import Dashboard from '@/pages/admin/Dashboard';
+import Users from '@/pages/admin/Users';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,7 +49,7 @@ const router = createBrowserRouter([
             children: [
               {
                 path: '/admin/users',
-                element: <div className="p-4 text-lg font-medium">Users (coming soon)</div>,
+                element: <Users />,
               },
             ],
           },
