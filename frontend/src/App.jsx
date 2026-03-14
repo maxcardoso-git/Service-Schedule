@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { useAuthStore } from '@/stores/authStore';
@@ -13,6 +13,7 @@ import Services from '@/pages/admin/Services';
 import Professionals from '@/pages/admin/Professionals';
 import Calendar from '@/pages/admin/Calendar';
 import Clients from '@/pages/admin/Clients';
+import Receptionist from '@/pages/Receptionist';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,6 +23,15 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Redirect root based on user role
+function RootRedirect() {
+  const user = useAuthStore((s) => s.user);
+  if (user?.role === 'RECEPTIONIST') {
+    return <Navigate to="/receptionist" replace />;
+  }
+  return <Dashboard />;
+}
 
 function AppInitializer() {
   const initFromToken = useAuthStore((s) => s.initFromToken);
@@ -46,7 +56,7 @@ const router = createBrowserRouter([
         children: [
           {
             path: '/',
-            element: <Dashboard />,
+            element: <RootRedirect />,
           },
           {
             element: <ProtectedRoute roles={['ADMIN']} />,
@@ -70,6 +80,15 @@ const router = createBrowserRouter([
               {
                 path: '/admin/clients',
                 element: <Clients />,
+              },
+            ],
+          },
+          {
+            element: <ProtectedRoute roles={['RECEPTIONIST']} />,
+            children: [
+              {
+                path: '/receptionist',
+                element: <Receptionist />,
               },
             ],
           },
