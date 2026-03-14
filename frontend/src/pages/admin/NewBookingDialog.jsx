@@ -12,6 +12,26 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
+const DAY_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+function formatWorkingHours(workingHours) {
+  if (!workingHours || workingHours.length === 0) return null;
+  // Group by day, show "Day HH:MM-HH:MM"
+  const byDay = new Map();
+  for (const wh of workingHours) {
+    const key = wh.dayOfWeek;
+    if (!byDay.has(key)) byDay.set(key, []);
+    byDay.get(key).push(`${wh.startTime}-${wh.endTime}`);
+  }
+  const parts = [];
+  for (const day of [1, 2, 3, 4, 5, 6, 0]) {
+    if (byDay.has(day)) {
+      parts.push(`${DAY_SHORT[day]} ${byDay.get(day).join(', ')}`);
+    }
+  }
+  return parts.join(' · ');
+}
+
 /**
  * Multi-step booking creation dialog.
  *
@@ -418,20 +438,26 @@ export default function NewBookingDialog({ open, onOpenChange, onBookingCreated 
                 <p className="text-sm text-muted-foreground py-4">No active professionals available.</p>
               )}
               <div className="flex flex-col gap-2 max-h-72 overflow-y-auto">
-                {displayedProfessionals.map((pro) => (
-                  <button
-                    key={pro.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedProfessional(pro);
-                      setSelectedSlot(null);
-                      setStep(4);
-                    }}
-                    className="flex items-center justify-between rounded-md border px-4 py-3 text-left transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <span className="font-medium text-sm">{pro.name}</span>
-                  </button>
-                ))}
+                {displayedProfessionals.map((pro) => {
+                  const schedule = formatWorkingHours(pro.workingHours);
+                  return (
+                    <button
+                      key={pro.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedProfessional(pro);
+                        setSelectedSlot(null);
+                        setStep(4);
+                      }}
+                      className="flex flex-col gap-1 rounded-md border px-4 py-3 text-left transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      <span className="font-medium text-sm">{pro.name}</span>
+                      {schedule && (
+                        <span className="text-xs text-muted-foreground">{schedule}</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
