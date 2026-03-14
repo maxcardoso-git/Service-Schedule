@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 ## Current Position
 
 Phase: 5 of 8 (Frontend Foundation + Auth)
-Plan: —
-Status: Ready to plan
-Last activity: 2026-03-14 — v2.0 roadmap created (Phases 5-8)
+Plan: 1 of 7 complete
+Status: In progress
+Last activity: 2026-03-14 — Completed 05-01-PLAN.md (AdminRole migration + requireRole middleware)
 
-Progress: [##########░░░░░░░░░░] 50% (v1.0 complete, v2.0 starting)
+Progress: [###########░░░░░░░░░] 55% (v1.0 complete, v2.0 plan 05-01 done)
 
 ## Milestone Summary
 
@@ -46,6 +46,9 @@ All v1.0 decisions logged in PROJECT.md Key Decisions table.
 - v2.0: React 19 + Vite 8 + shadcn/ui + TanStack Query + FullCalendar 6
 - v2.0: Express serves static files (single PM2 process, no separate frontend server)
 - v2.0: AdminUser gains role field (ADMIN, RECEPTIONIST) via migration
+- Two-migration strategy: initial ADMIN default (existing users), then RECEPTIONIST default (new users)
+- requireRole(...roles) middleware pattern for protecting admin-only endpoints
+- CORS: origin false in production (same-origin static serve), localhost:5173 in dev
 
 ### Pending Todos
 
@@ -58,5 +61,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-14
-Stopped at: v2.0 roadmap created, ready to plan Phase 5
+Stopped at: Completed 05-01-PLAN.md, ready for 05-02
 Resume file: None
