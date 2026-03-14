@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, Users, UserCheck, CreditCard } from 'lucide-react';
+import { Calendar, Users, UserCheck, CreditCard, DollarSign, UserX, BarChart3 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import {
   Card,
@@ -48,6 +48,7 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Row 1: Primary KPIs */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Bookings Today"
@@ -55,6 +56,28 @@ export default function Dashboard() {
           icon={Calendar}
           loading={isLoading}
         />
+        <StatCard
+          title="Revenue Today"
+          value={`R$ ${Number(stats?.revenueToday || 0).toFixed(2)}`}
+          icon={DollarSign}
+          loading={isLoading}
+        />
+        <StatCard
+          title="No-Shows Today"
+          value={stats?.noShowCount}
+          icon={UserX}
+          loading={isLoading}
+        />
+        <StatCard
+          title="Occupancy"
+          value={`${stats?.occupancyPercent ?? 0}%`}
+          icon={BarChart3}
+          loading={isLoading}
+        />
+      </div>
+
+      {/* Row 2: Secondary KPIs */}
+      <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard
           title="Total Clients"
           value={stats?.totalClients}

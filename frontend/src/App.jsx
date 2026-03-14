@@ -11,6 +11,7 @@ import Dashboard from '@/pages/admin/Dashboard';
 import Users from '@/pages/admin/Users';
 import Services from '@/pages/admin/Services';
 import Professionals from '@/pages/admin/Professionals';
+import Calendar from '@/pages/admin/Calendar';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -60,6 +61,10 @@ const router = createBrowserRouter([
               {
                 path: '/admin/professionals',
                 element: <Professionals />,
+              },
+              {
+                path: '/admin/calendar',
+                element: <Calendar />,
               },
             ],
           },
