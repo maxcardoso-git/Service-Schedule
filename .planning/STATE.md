@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 ## Current Position
 
 Phase: 6 of 8 (Services + Professionals Management) — In progress
-Plan: 1 of 3 complete
+Plan: 2 of 3 complete
 Status: In progress
-Last activity: 2026-03-14 — Completed 06-01-PLAN.md (Services CRUD page + backend list endpoint)
+Last activity: 2026-03-14 — Completed 06-02-PLAN.md (Professionals CRUD page + service assignment)
 
-Progress: [####################░░] 80% (v1.0 complete, v2.0 Phase 5 complete, Phase 6 plan 1 done)
+Progress: [#####################░] 82% (v1.0 complete, v2.0 Phase 5 complete, Phase 6 plans 1-2 done)
 
 ## Milestone Summary
 
@@ -42,6 +42,9 @@ All v1.0 decisions logged in PROJECT.md Key Decisions table.
 - Active toggle reuses PUT /:id with { active: bool } rather than dedicated PATCH endpoint (minimal API surface)
 - GET route placed before PUT /:id in services router to avoid Express route conflicts
 - serviceBodySchema extended with active: z.boolean().optional() at schema level (all routes benefit)
+- GET /admin/professionals route placed before /:id to prevent Express treating bare "/" as UUID param
+- ServiceAssignmentDialog fetches /admin/services with graceful error state for wave-1 parallel execution
+- assignProfessional state stores full professional object so dialog shows current assignments without extra fetch
 
 - Backend runs on Express + Prisma + PostgreSQL at port 3150 on VPS 72.61.52.70
 - API Key auth for agents, JWT for admin users
@@ -78,6 +81,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-14T18:24:12Z
-Stopped at: Completed 06-01-PLAN.md — Services CRUD page and backend list endpoint done.
+Last session: 2026-03-14T14:45:02Z
+Stopped at: Completed 06-02-PLAN.md — Professionals CRUD page with service assignment done.
 Resume file: None
