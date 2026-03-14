@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 
 ## Current Position
 
-Phase: 6 of 8 (Services + Professionals Management) — Phase complete
-Plan: 3 of 3 complete
-Status: Phase complete
-Last activity: 2026-03-14 — Completed 06-03-PLAN.md (WorkingHoursDialog for professional weekly schedule)
+Phase: 7 of 8 (Calendar, Bookings + Clients) — In progress
+Plan: 1 of 3 complete
+Status: In progress
+Last activity: 2026-03-14 — Completed 07-01-PLAN.md (Admin booking list, client endpoints, dashboard KPIs, FullCalendar installed)
 
-Progress: [######################] 86% (v1.0 complete, v2.0 Phase 5 complete, Phase 6 all 3 plans done)
+Progress: [########################] 89% (v1.0 complete, v2.0 Phase 5 complete, Phase 6 complete, Phase 7 plan 1/3 done)
 
 ## Milestone Summary
 
@@ -48,6 +48,10 @@ All v1.0 decisions logged in PROJECT.md Key Decisions table.
 - DAY_DISPLAY_ORDER [1,2,3,4,5,6,0] for Mon-first grid while preserving 0-6 dayOfWeek stored values
 - defaultHours() factory (not constant) to ensure fresh mutable array per dialog open
 - Only enabled days sent in PUT /working-hours payload — backend does full replacement implicitly clearing disabled days
+- Revenue uses BookingService.price (price at booking time) not Service.price (current catalog) — correct for financial accuracy
+- revenueToday via $queryRaw SUM — Prisma ORM lacks join-based aggregation, raw SQL needed
+- occupancyPercent: (non-cancelled bookings / activeProfessionals * 16 slots) * 100, capped at 100 — simple dashboard approximation
+- by-phone route placed before /:id/appointments — prevents Express treating literal "by-phone" as UUID param
 
 - Backend runs on Express + Prisma + PostgreSQL at port 3150 on VPS 72.61.52.70
 - API Key auth for agents, JWT for admin users
@@ -84,6 +88,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-14T15:10:50Z
-Stopped at: Completed 06-03-PLAN.md — WorkingHoursDialog added to Professionals page. Phase 6 complete.
+Last session: 2026-03-14T14:44:19Z
+Stopped at: Completed 07-01-PLAN.md — Admin booking list endpoint, client CRUD routes, dashboard KPIs, FullCalendar 6 installed.
 Resume file: None
