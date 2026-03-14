@@ -4,6 +4,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import ptBrLocale from '@fullcalendar/core/locales/pt-br';
+import { Plus } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
@@ -15,6 +16,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import NewBookingDialog from '@/pages/admin/NewBookingDialog';
 
 // Status color map for FullCalendar event styling
 const STATUS_COLORS = {
@@ -213,7 +215,9 @@ function StatusLegend() {
 }
 
 export default function Calendar() {
+  const queryClient = useQueryClient();
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [newBookingOpen, setNewBookingOpen] = useState(false);
 
   // TODO: Add date range filtering for scale (hundreds+ of bookings).
   // For now, fetch all bookings — fine for small salon use case.
@@ -242,7 +246,13 @@ export default function Calendar() {
 
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-semibold">Calendar</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Calendar</h1>
+        <Button onClick={() => setNewBookingOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          New Booking
+        </Button>
+      </div>
 
       <StatusLegend />
 
@@ -285,6 +295,12 @@ export default function Calendar() {
         onOpenChange={(val) => {
           if (!val) setSelectedBooking(null);
         }}
+      />
+
+      <NewBookingDialog
+        open={newBookingOpen}
+        onOpenChange={setNewBookingOpen}
+        onBookingCreated={() => queryClient.invalidateQueries({ queryKey: ['bookings'] })}
       />
     </div>
   );

@@ -4,7 +4,11 @@ import { z } from 'zod';
 import { adminAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import prisma from '../../lib/prisma.js';
-import { updateBookingStatus } from '../../services/bookingService.js';
+import {
+  updateBookingStatus,
+  getAvailableSlots,
+  createPreReservation,
+} from '../../services/bookingService.js';
 
 const router = Router();
 
@@ -64,6 +68,50 @@ router.get(
     });
 
     res.json({ data: bookings });
+  })
+);
+
+/**
+ * POST /api/admin/bookings/availability
+ * Check available time slots (JWT-authenticated mirror of the apiKey endpoint).
+ * Body: { professionalId: uuid, serviceId: uuid, date: YYYY-MM-DD }
+ */
+router.post(
+  '/availability',
+  validate({
+    body: z.object({
+      professionalId: z.string().uuid(),
+      serviceId: z.string().uuid(),
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be YYYY-MM-DD'),
+    }),
+  }),
+  asyncHandler(async (req, res) => {
+    const { professionalId, serviceId, date } = req.body;
+    const result = await getAvailableSlots(professionalId, serviceId, date);
+    res.json({ data: result });
+  })
+);
+
+/**
+ * POST /api/admin/bookings
+ * Create a pre-reservation (JWT-authenticated mirror of the apiKey endpoint).
+ * Body: { clientId, professionalId, serviceId, startTime, endTime?, idempotencyKey? }
+ */
+router.post(
+  '/',
+  validate({
+    body: z.object({
+      clientId: z.string().uuid(),
+      professionalId: z.string().uuid(),
+      serviceId: z.string().uuid(),
+      startTime: z.string().datetime(),
+      endTime: z.string().datetime().optional(),
+      idempotencyKey: z.string().max(255).optional(),
+    }),
+  }),
+  asyncHandler(async (req, res) => {
+    const booking = await createPreReservation(req.body);
+    res.status(201).json({ data: booking });
   })
 );
 
