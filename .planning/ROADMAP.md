@@ -171,7 +171,12 @@ Plans:
   3. An admin can open a professional's detail view and assign or remove services using a multi-select control -- the professional's availability query reflects only assigned services
   4. An admin can configure a professional's working hours via a visual weekly grid (Mon-Sun), setting start/end times per day -- the availability engine respects these hours for slot generation
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Backend list endpoint + Services CRUD page (table, create/edit dialogs, active toggle)
+- [ ] 06-02-PLAN.md — Backend list endpoint + Professionals CRUD page with service assignment dialog
+- [ ] 06-03-PLAN.md — Working hours visual weekly grid dialog on Professionals page
 
 ---
 
@@ -224,6 +229,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 3. Payment Engine | v1.0 | 2/2 | Complete | 2026-03-13 |
 | 4. Conversation Tracking + Integration Polish | v1.0 | 2/2 | Complete | 2026-03-13 |
 | 5. Frontend Foundation + Auth | v2.0 | 0/7 | Planned | - |
-| 6. Services & Professionals Management | v2.0 | 0/TBD | Not started | - |
+| 6. Services & Professionals Management | v2.0 | 0/3 | Not started | - |
 | 7. Calendar, Bookings & Client Management | v2.0 | 0/TBD | Not started | - |
 | 8. Receptionist Interface | v2.0 | 0/TBD | Not started | - |
