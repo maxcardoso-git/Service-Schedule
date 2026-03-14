@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Scissors } from 'lucide-react';
+import { Plus, Pencil, Scissors, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -375,6 +375,170 @@ function ServiceAssignmentDialog({ professional, open, onOpenChange }) {
   );
 }
 
+const DAY_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAY_DISPLAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+
+const defaultHours = () =>
+  Array.from({ length: 7 }, () => ({ enabled: false, startTime: '09:00', endTime: '18:00' }));
+
+function WorkingHoursDialog({ professional, open, onOpenChange }) {
+  const queryClient = useQueryClient();
+  const [hours, setHours] = useState(defaultHours());
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Load existing working hours when professional changes
+  useState(() => {
+    if (professional && open) {
+      setLoading(true);
+      setError('');
+      apiFetch('/admin/professionals/' + professional.id)
+        .then((res) => {
+          const fresh = defaultHours();
+          const workingHours = res?.data?.workingHours ?? [];
+          workingHours.forEach(({ dayOfWeek, startTime, endTime }) => {
+            fresh[dayOfWeek] = { enabled: true, startTime, endTime };
+          });
+          setHours(fresh);
+        })
+        .catch((err) => {
+          setError(err.message || 'Failed to load working hours');
+        })
+        .finally(() => setLoading(false));
+    }
+  });
+
+  const mutation = useMutation({
+    mutationFn: (payload) =>
+      apiFetch('/admin/professionals/' + professional.id + '/working-hours', {
+        method: 'PUT',
+        body: payload,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['professionals'] });
+      toast.success('Working hours saved');
+      onOpenChange(false);
+    },
+    onError: (err) => {
+      setError(err.message || 'Failed to save working hours');
+    },
+  });
+
+  function handleDayToggle(dayIndex, enabled) {
+    setHours((prev) =>
+      prev.map((d, i) => (i === dayIndex ? { ...d, enabled } : d))
+    );
+  }
+
+  function handleTimeChange(dayIndex, field, value) {
+    setHours((prev) =>
+      prev.map((d, i) => (i === dayIndex ? { ...d, [field]: value } : d))
+    );
+  }
+
+  function handleSave() {
+    setError('');
+    // Validate enabled days: startTime must be before endTime
+    for (const dayIndex of DAY_DISPLAY_ORDER) {
+      const day = hours[dayIndex];
+      if (day.enabled && day.startTime >= day.endTime) {
+        setError(
+          `${DAY_LABELS[dayIndex]}: start time must be before end time.`
+        );
+        return;
+      }
+    }
+    const payload = {
+      hours: hours
+        .map((day, dayOfWeek) => ({ ...day, dayOfWeek }))
+        .filter((day) => day.enabled)
+        .map(({ dayOfWeek, startTime, endTime }) => ({ dayOfWeek, startTime, endTime })),
+    };
+    mutation.mutate(payload);
+  }
+
+  function handleOpenChange(val) {
+    if (!val) {
+      setError('');
+      setHours(defaultHours());
+    }
+    onOpenChange(val);
+  }
+
+  if (!professional) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Working Hours — {professional.name}</DialogTitle>
+        </DialogHeader>
+
+        <div className="py-2">
+          {loading && (
+            <p className="text-sm text-muted-foreground">Loading working hours...</p>
+          )}
+
+          {!loading && (
+            <div className="flex flex-col gap-3">
+              {DAY_DISPLAY_ORDER.map((dayIndex) => {
+                const day = hours[dayIndex];
+                return (
+                  <div key={dayIndex} className="flex items-center gap-3">
+                    <span className="w-24 shrink-0 text-sm font-medium">
+                      {DAY_LABELS[dayIndex]}
+                    </span>
+                    <Switch
+                      checked={day.enabled}
+                      onCheckedChange={(val) => handleDayToggle(dayIndex, val)}
+                    />
+                    <div
+                      className={`flex items-center gap-2 ${
+                        day.enabled ? '' : 'opacity-40'
+                      }`}
+                    >
+                      <Input
+                        type="time"
+                        value={day.startTime}
+                        onChange={(e) => handleTimeChange(dayIndex, 'startTime', e.target.value)}
+                        disabled={!day.enabled}
+                        className="w-32"
+                      />
+                      <span className="text-sm text-muted-foreground">–</span>
+                      <Input
+                        type="time"
+                        value={day.endTime}
+                        onChange={(e) => handleTimeChange(dayIndex, 'endTime', e.target.value)}
+                        disabled={!day.enabled}
+                        className="w-32"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {error && (
+            <p className="mt-3 rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {error}
+            </p>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={mutation.isPending || loading}>
+            {mutation.isPending ? 'Saving...' : 'Save Hours'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function SkeletonRow() {
   return (
     <TableRow>
@@ -392,6 +556,7 @@ export default function Professionals() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editProfessional, setEditProfessional] = useState(null);
   const [assignProfessional, setAssignProfessional] = useState(null);
+  const [hoursProf, setHoursProf] = useState(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['professionals'],
@@ -517,6 +682,15 @@ export default function Professionals() {
                         <Scissors className="h-4 w-4" />
                         <span className="sr-only">Assign services to {professional.name}</span>
                       </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => setHoursProf(professional)}
+                        title="Working hours"
+                      >
+                        <Clock className="h-4 w-4" />
+                        <span className="sr-only">Working hours for {professional.name}</span>
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -540,6 +714,14 @@ export default function Professionals() {
         open={assignProfessional !== null}
         onOpenChange={(val) => {
           if (!val) setAssignProfessional(null);
+        }}
+      />
+
+      <WorkingHoursDialog
+        professional={hoursProf}
+        open={hoursProf !== null}
+        onOpenChange={(val) => {
+          if (!val) setHoursProf(null);
         }}
       />
     </div>
