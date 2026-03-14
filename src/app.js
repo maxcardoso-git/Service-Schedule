@@ -24,7 +24,16 @@ import { swaggerSpec, serve, setup } from './swagger.js';
 const app = express();
 
 // Security headers
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      'upgrade-insecure-requests': null,
+    },
+  },
+  hsts: false,
+  crossOriginOpenerPolicy: false,
+}));
 
 // Cross-origin resource sharing
 app.use(cors({
