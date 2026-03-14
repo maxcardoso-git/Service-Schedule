@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 ## Current Position
 
 Phase: 5 of 8 (Frontend Foundation + Auth)
-Plan: 3 of 7 complete
+Plan: 4 of 7 complete
 Status: In progress
-Last activity: 2026-03-14 — Completed 05-03-PLAN.md (Frontend scaffold: Vite 8, Tailwind v4, shadcn/ui, path alias, API proxy)
+Last activity: 2026-03-14 — Completed 05-04-PLAN.md (Login page, auth store, apiFetch, ProtectedRoute, router wiring)
 
-Progress: [#############░░░░░░░] 60% (v1.0 complete, v2.0 plans 05-01, 05-02, 05-03 done)
+Progress: [##############░░░░░░] 63% (v1.0 complete, v2.0 plans 05-01, 05-02, 05-03, 05-04 done)
 
 ## Milestone Summary
 
@@ -54,6 +54,10 @@ All v1.0 decisions logged in PROJECT.md Key Decisions table.
 - @tailwindcss/vite requires --legacy-peer-deps with Vite 8 (peer dep range not updated yet, functionally compatible)
 - shadcn style: base-nova (default); JSX not TypeScript; button uses @base-ui/react primitive
 - shadcn add uses -o (overwrite) flag, not --force (removed in shadcn@4)
+- apiFetch prepends /api internally — callers pass paths without /api prefix
+- JWT decoded client-side with atob + JSON.parse (no external JWT library)
+- ProtectedRoute uses Outlet pattern for composability
+- useAuthStore.getState() for imperative access (apiFetch, login handler), useAuthStore(selector) for reactive reads
 
 ### Pending Todos
 
@@ -65,6 +69,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-14
-Stopped at: Completed 05-03-PLAN.md, ready for 05-04
+Last session: 2026-03-14T13:46:43Z
+Stopped at: Completed 05-04-PLAN.md, ready for 05-05
 Resume file: None
