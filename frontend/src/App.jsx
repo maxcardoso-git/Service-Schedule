@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { useAuthStore } from '@/stores/authStore';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { AppLayout } from '@/components/layout/AppLayout';
 import Login from '@/pages/Login';
 import NotFound from '@/pages/NotFound';
+import Dashboard from '@/pages/admin/Dashboard';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,8 +37,22 @@ const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       {
-        path: '/',
-        element: <div className="p-8 text-2xl font-semibold">Dashboard</div>,
+        element: <AppLayout />,
+        children: [
+          {
+            path: '/',
+            element: <Dashboard />,
+          },
+          {
+            element: <ProtectedRoute roles={['ADMIN']} />,
+            children: [
+              {
+                path: '/admin/users',
+                element: <div className="p-4 text-lg font-medium">Users (coming soon)</div>,
+              },
+            ],
+          },
+        ],
       },
     ],
   },
