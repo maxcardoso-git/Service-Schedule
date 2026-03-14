@@ -8,6 +8,21 @@ Plataforma de gestão de agenda e agendamentos inteligentes, projetada para ser 
 
 **Permitir que agentes de IA realizem todas as operações de agenda de forma autônoma, com rastreabilidade conversacional e interface administrativa para operação humana.**
 
+## Current Milestone: v2.0 Frontend
+
+**Goal:** Adicionar interfaces web para administradores e recepcionistas — dashboard administrativo completo com visão de calendário, gestão visual de serviços/profissionais/clientes, e interface simplificada para recepcionistas agilizarem agendamentos presenciais.
+
+**Target features:**
+- Dashboard administrativo (calendar view, booking management, CRUD visual)
+- Interface recepcionista (agenda do dia, agendamento rápido, busca de cliente)
+- Autenticação frontend com roles (admin vs recepcionista)
+
+## Previous Milestones
+
+### v1.0 — AI Scheduling API (Shipped 2026-03-13)
+- 5 domain modules, 8 capability-mapped endpoints, 28 requirements
+- See .planning/MILESTONES.md
+
 ## Context
 
 ### Motivação
@@ -55,41 +70,33 @@ O OrchestratorAI já possui jornadas de atendimento (Beauty Services) com 8 capa
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Buscar cliente por telefone — v1.0
+- ✓ Cadastrar novo cliente — v1.0
+- ✓ Consultar histórico de atendimentos — v1.0
+- ✓ Listar serviços disponíveis — v1.0
+- ✓ CRUD de serviços (admin API) — v1.0
+- ✓ Associar profissionais a serviços — v1.0
+- ✓ Consultar slots disponíveis — v1.0
+- ✓ Criar pré-reserva temporária (TTL) — v1.0
+- ✓ Confirmar agendamento — v1.0
+- ✓ Cancelar agendamento — v1.0
+- ✓ Gestão de horários de trabalho — v1.0
+- ✓ Gerar pagamento PIX (simulado) — v1.0
+- ✓ Consultar status do pagamento — v1.0
+- ✓ Simular pagamento (dev) — v1.0
+- ✓ Registrar conversationId — v1.0
+- ✓ Consultar por conversationId — v1.0
+- ✓ API Key auth para agentes — v1.0
+- ✓ JWT admin auth — v1.0
+- ✓ Swagger/OpenAPI docs — v1.0
 
 ### Active
 
-**Identity & Clients**
-- [ ] Buscar cliente por telefone
-- [ ] Cadastrar novo cliente
-- [ ] Consultar histórico de atendimentos do cliente
+**v2.0 Frontend**
 
-**Services Catalog**
-- [ ] Listar serviços disponíveis (nome, duração, preço)
-- [ ] CRUD de serviços (admin)
-- [ ] Associar profissionais a serviços
-
-**Scheduling Engine**
-- [ ] Consultar slots disponíveis (por data, serviço, profissional)
-- [ ] Criar pré-reserva temporária (TTL)
-- [ ] Confirmar agendamento
-- [ ] Cancelar agendamento
-- [ ] Visualização de calendário (estilo Google Calendar)
-- [ ] Gestão de horários de trabalho dos profissionais
-
-**Payment Engine**
-- [ ] Gerar pagamento PIX (QR code)
-- [ ] Consultar status do pagamento
-- [ ] Webhook de confirmação de pagamento
-
-**Conversation Tracking**
-- [ ] Registrar conversationId em cada agendamento
-- [ ] Consultar agendamentos por conversationId
-
-**Admin & Frontend**
-- [ ] Interface administrativa web
-- [ ] Autenticação de usuários (admin, recepcionista, gestor)
-- [ ] API Key auth para agentes de IA
+- [ ] Interface administrativa web (dashboard, calendar, CRUD visual)
+- [ ] Interface recepcionista (agenda simplificada, agendamento rápido)
+- [ ] Autenticação frontend (login, sessão, roles)
 
 ### Out of Scope
 
@@ -118,4 +125,4 @@ O OrchestratorAI já possui jornadas de atendimento (Beauty Services) com 8 capa
 | PIX simulado | Foco na API shape, integração real de pagamento vem depois | — Pending |
 
 ---
-*Last updated: 2026-03-13 after initialization*
+*Last updated: 2026-03-13 after starting v2.0 Frontend milestone*
