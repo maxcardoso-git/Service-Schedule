@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-14)
 
 **Core value:** Permitir que agentes de IA realizem todas as operações de agenda de forma autônoma, com rastreabilidade conversacional e interface administrativa para operação humana.
-**Current focus:** v2.0 Frontend — Phase 6 (Scheduling UI)
+**Current focus:** v2.0 Frontend — Phase 8 (Receptionist interface)
 
 ## Current Position
 
-Phase: 7 of 8 (Calendar, Bookings + Clients) — In progress
-Plan: 2 of 3 complete
-Status: In progress
-Last activity: 2026-03-14 — Completed 07-02-PLAN.md (Calendar page with FullCalendar, 7-KPI Dashboard, /admin/calendar route)
+Phase: 7 of 8 (Calendar, Bookings + Clients) — Phase complete
+Plan: 3 of 3 complete
+Status: Phase complete — ready for Phase 8
+Last activity: 2026-03-14 — Completed 07-03-PLAN.md (Clients page, NewBookingDialog 5-step flow, admin availability+create endpoints, New Booking button on Calendar)
 
-Progress: [########################] 89% (v1.0 complete, v2.0 Phase 5 complete, Phase 6 complete, Phase 7 plan 1/3 done)
+Progress: [##########################] 95% (v1.0 complete, v2.0 Phases 5-7 complete)
 
 ## Milestone Summary
 
@@ -52,6 +52,11 @@ All v1.0 decisions logged in PROJECT.md Key Decisions table.
 - revenueToday via $queryRaw SUM — Prisma ORM lacks join-based aggregation, raw SQL needed
 - occupancyPercent: (non-cancelled bookings / activeProfessionals * 16 slots) * 100, capped at 100 — simple dashboard approximation
 - by-phone route placed before /:id/appointments — prevents Express treating literal "by-phone" as UUID param
+- Admin availability+create endpoints are JWT-auth mirrors of apiKey routes — same bookingService functions, different middleware
+- Debounced search: controlled input + useEffect setTimeout(300) updating separate searchTerm state that drives useQuery key
+- staleTime: 0 on availability queries — slot availability changes between requests, always fresh
+- crypto.randomUUID() for idempotencyKey on each confirm click — prevents duplicate bookings on retry
+- Multi-step booking dialog: step state (1-5) with conditional render per step, Back button on steps 2-5, reset on dialog close
 - FullCalendar locale must be imported as object from @fullcalendar/core/locales/pt-br (not passed as string prop)
 - FullCalendar extendedProps.booking carries full booking object for event click handlers
 - STATUS_TRANSITIONS map (object keyed by status) replaces switch/if chains for reachable-states logic
@@ -93,6 +98,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-14T14:51:00Z
-Stopped at: Completed 07-02-PLAN.md — Calendar page (FullCalendar + status transitions) and Dashboard 7 KPI cards.
+Last session: 2026-03-14T14:57:02Z
+Stopped at: Completed 07-03-PLAN.md — Clients page, NewBookingDialog, admin booking endpoints. Phase 7 fully done.
 Resume file: None
