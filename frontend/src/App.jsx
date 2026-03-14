@@ -10,6 +10,7 @@ import NotFound from '@/pages/NotFound';
 import Dashboard from '@/pages/admin/Dashboard';
 import Users from '@/pages/admin/Users';
 import Services from '@/pages/admin/Services';
+import Professionals from '@/pages/admin/Professionals';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,6 +56,10 @@ const router = createBrowserRouter([
               {
                 path: '/admin/services',
                 element: <Services />,
+              },
+              {
+                path: '/admin/professionals',
+                element: <Professionals />,
               },
             ],
           },
