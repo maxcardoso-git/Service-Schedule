@@ -60,47 +60,47 @@ Requirements for v2.0 Frontend release. Each maps to roadmap phases (continuing 
 
 ### Foundation & Auth
 
-- [ ] **FAUTH-01**: Login page with email/password form, JWT token storage, and auto-redirect on session expiry
-- [ ] **FAUTH-02**: AdminUser model gains `role` field (ADMIN, RECEPTIONIST) via Prisma migration; JWT payload includes role
-- [ ] **FAUTH-03**: Role-based frontend routing — admin sees full dashboard, receptionist sees simplified interface
-- [ ] **FAUTH-04**: Admin can create, edit, and deactivate admin/receptionist user accounts
-- [ ] **FAUTH-05**: CORS middleware configured on backend for frontend origin
+- [x] **FAUTH-01**: Login page with email/password form, JWT token storage, and auto-redirect on session expiry
+- [x] **FAUTH-02**: AdminUser model gains `role` field (ADMIN, RECEPTIONIST) via Prisma migration; JWT payload includes role
+- [x] **FAUTH-03**: Role-based frontend routing — admin sees full dashboard, receptionist sees simplified interface
+- [x] **FAUTH-04**: Admin can create, edit, and deactivate admin/receptionist user accounts
+- [x] **FAUTH-05**: CORS middleware configured on backend for frontend origin
 
 ### Services & Professionals Management
 
-- [ ] **FMGMT-01**: Admin can view services in a table with name, duration, price, and active status
-- [ ] **FMGMT-02**: Admin can create, edit, and deactivate services via modal/form
-- [ ] **FMGMT-03**: Admin can view professionals in a table with name, contact info, active status, and assigned services
-- [ ] **FMGMT-04**: Admin can create, edit, and deactivate professionals via modal/form
-- [ ] **FMGMT-05**: Admin can assign/remove services to/from a professional using multi-select
-- [ ] **FMGMT-06**: Admin can configure working hours per professional via visual weekly grid (Mon-Sun with start/end times)
+- [x] **FMGMT-01**: Admin can view services in a table with name, duration, price, and active status
+- [x] **FMGMT-02**: Admin can create, edit, and deactivate services via modal/form
+- [x] **FMGMT-03**: Admin can view professionals in a table with name, contact info, active status, and assigned services
+- [x] **FMGMT-04**: Admin can create, edit, and deactivate professionals via modal/form
+- [x] **FMGMT-05**: Admin can assign/remove services to/from a professional using multi-select
+- [x] **FMGMT-06**: Admin can configure working hours per professional via visual weekly grid (Mon-Sun with start/end times)
 
 ### Calendar & Booking (Admin)
 
-- [ ] **FCAL-01**: Admin sees a calendar view (day and week modes) with bookings rendered as time blocks in per-professional columns
-- [ ] **FCAL-02**: Booking blocks are color-coded by status (PRE_RESERVED=yellow, CONFIRMED=blue, COMPLETED=green, CANCELLED=gray, NO_SHOW=red)
-- [ ] **FCAL-03**: Admin can create a booking via multi-step flow: search/create client → pick service → pick professional → pick available slot → confirm
-- [ ] **FCAL-04**: Admin can transition booking status: confirm, cancel, mark as completed, mark as no-show
-- [ ] **FCAL-05**: Dashboard shows KPI cards: bookings today, revenue today, no-show count, occupancy percentage
+- [x] **FCAL-01**: Admin sees a calendar view (day and week modes) with bookings rendered as time blocks in per-professional columns
+- [x] **FCAL-02**: Booking blocks are color-coded by status (PRE_RESERVED=yellow, CONFIRMED=blue, COMPLETED=green, CANCELLED=gray, NO_SHOW=red)
+- [x] **FCAL-03**: Admin can create a booking via multi-step flow: search/create client → pick service → pick professional → pick available slot → confirm
+- [x] **FCAL-04**: Admin can transition booking status: confirm, cancel, mark as completed, mark as no-show
+- [x] **FCAL-05**: Dashboard shows KPI cards: bookings today, revenue today, no-show count, occupancy percentage
 
 ### Client Management
 
-- [ ] **FCLNT-01**: Admin can search clients by phone and view results
-- [ ] **FCLNT-02**: Admin can register new clients (name, phone, email)
-- [ ] **FCLNT-03**: Admin can view a client's appointment history
+- [x] **FCLNT-01**: Admin can search clients by phone and view results
+- [x] **FCLNT-02**: Admin can register new clients (name, phone, email)
+- [x] **FCLNT-03**: Admin can view a client's appointment history
 
 ### Receptionist Interface
 
-- [ ] **FRCPT-01**: Receptionist sees today's agenda as a timeline grouped by professional
-- [ ] **FRCPT-02**: Receptionist can create bookings via quick 3-step flow: phone lookup → service + slot → confirm
-- [ ] **FRCPT-03**: Receptionist can search clients by phone and see name + last visit
-- [ ] **FRCPT-04**: Receptionist can check slot availability for a service/date
+- [x] **FRCPT-01**: Receptionist sees today's agenda as a timeline grouped by professional
+- [x] **FRCPT-02**: Receptionist can create bookings via quick 3-step flow: phone lookup → service + slot → confirm
+- [x] **FRCPT-03**: Receptionist can search clients by phone and see name + last visit
+- [x] **FRCPT-04**: Receptionist can check slot availability for a service/date
 
 ### Frontend Infrastructure
 
-- [ ] **FINF-01**: React 19 + Vite frontend project scaffolded with router, API client, and auth context
-- [ ] **FINF-02**: Express backend serves Vite production build as static files (single PM2 process)
-- [ ] **FINF-03**: Backend gains necessary new endpoints: GET /api/clients (list), PATCH /api/bookings/:id/status, GET /api/admin/dashboard/stats
+- [x] **FINF-01**: React 19 + Vite frontend project scaffolded with router, API client, and auth context
+- [x] **FINF-02**: Express backend serves Vite production build as static files (single PM2 process)
+- [x] **FINF-03**: Backend gains necessary new endpoints: GET /api/clients (list), PATCH /api/bookings/:id/status, GET /api/admin/dashboard/stats
 
 ## v2.1 Requirements
 
@@ -180,32 +180,32 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFR-06 | Phase 1 | Complete |
 | ADMN-01 | Phase 1 | Complete |
 | ADMN-02 | Phase 1 | Complete |
-| FAUTH-01 | Phase 5 | Pending |
-| FAUTH-02 | Phase 5 | Pending |
-| FAUTH-03 | Phase 5 | Pending |
-| FAUTH-04 | Phase 5 | Pending |
-| FAUTH-05 | Phase 5 | Pending |
-| FINF-01 | Phase 5 | Pending |
-| FINF-02 | Phase 5 | Pending |
-| FINF-03 | Phase 5 | Pending |
-| FMGMT-01 | Phase 6 | Pending |
-| FMGMT-02 | Phase 6 | Pending |
-| FMGMT-03 | Phase 6 | Pending |
-| FMGMT-04 | Phase 6 | Pending |
-| FMGMT-05 | Phase 6 | Pending |
-| FMGMT-06 | Phase 6 | Pending |
-| FCAL-01 | Phase 7 | Pending |
-| FCAL-02 | Phase 7 | Pending |
-| FCAL-03 | Phase 7 | Pending |
-| FCAL-04 | Phase 7 | Pending |
-| FCAL-05 | Phase 7 | Pending |
-| FCLNT-01 | Phase 7 | Pending |
-| FCLNT-02 | Phase 7 | Pending |
-| FCLNT-03 | Phase 7 | Pending |
-| FRCPT-01 | Phase 8 | Pending |
-| FRCPT-02 | Phase 8 | Pending |
-| FRCPT-03 | Phase 8 | Pending |
-| FRCPT-04 | Phase 8 | Pending |
+| FAUTH-01 | Phase 5 | Complete |
+| FAUTH-02 | Phase 5 | Complete |
+| FAUTH-03 | Phase 5 | Complete |
+| FAUTH-04 | Phase 5 | Complete |
+| FAUTH-05 | Phase 5 | Complete |
+| FINF-01 | Phase 5 | Complete |
+| FINF-02 | Phase 5 | Complete |
+| FINF-03 | Phase 5 | Complete |
+| FMGMT-01 | Phase 6 | Complete |
+| FMGMT-02 | Phase 6 | Complete |
+| FMGMT-03 | Phase 6 | Complete |
+| FMGMT-04 | Phase 6 | Complete |
+| FMGMT-05 | Phase 6 | Complete |
+| FMGMT-06 | Phase 6 | Complete |
+| FCAL-01 | Phase 7 | Complete |
+| FCAL-02 | Phase 7 | Complete |
+| FCAL-03 | Phase 7 | Complete |
+| FCAL-04 | Phase 7 | Complete |
+| FCAL-05 | Phase 7 | Complete |
+| FCLNT-01 | Phase 7 | Complete |
+| FCLNT-02 | Phase 7 | Complete |
+| FCLNT-03 | Phase 7 | Complete |
+| FRCPT-01 | Phase 8 | Complete |
+| FRCPT-02 | Phase 8 | Complete |
+| FRCPT-03 | Phase 8 | Complete |
+| FRCPT-04 | Phase 8 | Complete |
 
 **Coverage:**
 - v1.0 requirements: 28 total (all Complete)

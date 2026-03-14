@@ -122,10 +122,10 @@ Plans:
 
 **Milestone Goal:** Admin dashboard and receptionist interface with calendar view, booking management, visual CRUD for services/professionals, and simplified receptionist experience -- all served as a single PM2 process from the existing Express backend.
 
-- [ ] **Phase 5: Frontend Foundation + Auth** - React scaffold, backend prep (role migration, CORS, new endpoints), login, role-based routing, user management
-- [ ] **Phase 6: Services & Professionals Management** - Admin CRUD tables and forms for services, professionals, service assignments, and working hours
-- [ ] **Phase 7: Calendar, Bookings & Client Management** - FullCalendar integration, booking creation/status management, KPI dashboard, client search and history
-- [ ] **Phase 8: Receptionist Interface** - Simplified today-only agenda, quick booking flow, phone lookup, and availability check
+- [x] **Phase 5: Frontend Foundation + Auth** - React scaffold, backend prep (role migration, CORS, new endpoints), login, role-based routing, user management
+- [x] **Phase 6: Services & Professionals Management** - Admin CRUD tables and forms for services, professionals, service assignments, and working hours
+- [x] **Phase 7: Calendar, Bookings & Client Management** - FullCalendar integration, booking creation/status management, KPI dashboard, client search and history
+- [x] **Phase 8: Receptionist Interface** - Simplified today-only agenda, quick booking flow, phone lookup, and availability check
 
 ## Phase Details
 
@@ -147,13 +147,13 @@ Plans:
 **Plans:** 7 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Backend auth infrastructure (AdminRole migration, requireRole middleware, login JWT fix, CORS config)
-- [ ] 05-02-PLAN.md — Backend new endpoints (user CRUD, client list, booking status, dashboard stats)
-- [ ] 05-03-PLAN.md — Frontend scaffold (Vite 8, React 19, Tailwind v4, shadcn/ui, path aliases, API proxy)
-- [ ] 05-04-PLAN.md — Auth flow (Zustand auth store, API client, login page, ProtectedRoute)
-- [ ] 05-05-PLAN.md — Layout + role routing (AppLayout, Sidebar, Header, Dashboard page)
-- [ ] 05-06-PLAN.md — User management (CRUD table with create/edit dialogs)
-- [ ] 05-07-PLAN.md — Production serving + end-to-end verification
+- [x] 05-01-PLAN.md — Backend auth infrastructure (AdminRole migration, requireRole middleware, login JWT fix, CORS config)
+- [x] 05-02-PLAN.md — Backend new endpoints (user CRUD, client list, booking status, dashboard stats)
+- [x] 05-03-PLAN.md — Frontend scaffold (Vite 8, React 19, Tailwind v4, shadcn/ui, path aliases, API proxy)
+- [x] 05-04-PLAN.md — Auth flow (Zustand auth store, API client, login page, ProtectedRoute)
+- [x] 05-05-PLAN.md — Layout + role routing (AppLayout, Sidebar, Header, Dashboard page)
+- [x] 05-06-PLAN.md — User management (CRUD table with create/edit dialogs)
+- [x] 05-07-PLAN.md — Production serving + end-to-end verification
 
 ---
 
@@ -174,9 +174,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Backend list endpoint + Services CRUD page (table, create/edit dialogs, active toggle)
-- [ ] 06-02-PLAN.md — Backend list endpoint + Professionals CRUD page with service assignment dialog
-- [ ] 06-03-PLAN.md — Working hours visual weekly grid dialog on Professionals page
+- [x] 06-01-PLAN.md — Backend list endpoint + Services CRUD page (table, create/edit dialogs, active toggle)
+- [x] 06-02-PLAN.md — Backend list endpoint + Professionals CRUD page with service assignment dialog
+- [x] 06-03-PLAN.md — Working hours visual weekly grid dialog on Professionals page
 
 ---
 
@@ -198,9 +198,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — Backend admin endpoints (booking list with filters, client CRUD under JWT, enhanced dashboard KPIs) + FullCalendar install
-- [ ] 07-02-PLAN.md — Calendar page (FullCalendar day/week views, color-coded bookings, status transitions) + Dashboard KPI update + route wiring
-- [ ] 07-03-PLAN.md — Clients page (search, register, history) + multi-step booking creation dialog + Calendar integration
+- [x] 07-01-PLAN.md — Backend admin endpoints (booking list with filters, client CRUD under JWT, enhanced dashboard KPIs) + FullCalendar install
+- [x] 07-02-PLAN.md — Calendar page (FullCalendar day/week views, color-coded bookings, status transitions) + Dashboard KPI update + route wiring
+- [x] 07-03-PLAN.md — Clients page (search, register, history) + multi-step booking creation dialog + Calendar integration
 
 ---
 
@@ -221,7 +221,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 08-01-PLAN.md — Receptionist page (today's agenda by professional, client search, availability check) + 3-step booking dialog + route wiring
+- [x] 08-01-PLAN.md — Receptionist page (today's agenda by professional, client search, availability check) + 3-step booking dialog + route wiring
 
 ---
 
@@ -236,7 +236,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 2. Scheduling Engine | v1.0 | 3/3 | Complete | 2026-03-13 |
 | 3. Payment Engine | v1.0 | 2/2 | Complete | 2026-03-13 |
 | 4. Conversation Tracking + Integration Polish | v1.0 | 2/2 | Complete | 2026-03-13 |
-| 5. Frontend Foundation + Auth | v2.0 | 0/7 | Planned | - |
-| 6. Services & Professionals Management | v2.0 | 0/3 | Not started | - |
-| 7. Calendar, Bookings & Client Management | v2.0 | 0/3 | Not started | - |
-| 8. Receptionist Interface | v2.0 | 0/1 | Not started | - |
+| 5. Frontend Foundation + Auth | v2.0 | 7/7 | Complete | 2026-03-14 |
+| 6. Services & Professionals Management | v2.0 | 3/3 | Complete | 2026-03-14 |
+| 7. Calendar, Bookings & Client Management | v2.0 | 3/3 | Complete | 2026-03-14 |
+| 8. Receptionist Interface | v2.0 | 1/1 | Complete | 2026-03-14 |
