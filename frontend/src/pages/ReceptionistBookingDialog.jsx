@@ -249,12 +249,20 @@ export default function ReceptionistBookingDialog({ open, onOpenChange, onBookin
       );
     }
 
-    const slots = availability.slots ?? [];
-    if (slots.length === 0) {
+    const rawSlots = availability.slots ?? [];
+    if (rawSlots.length === 0) {
       return (
         <p className="text-sm text-muted-foreground py-2">No available slots for this date.</p>
       );
     }
+
+    // API returns slots as ISO strings; convert to {startTime, endTime} objects
+    const durationMs = (selectedService?.durationMin ?? 60) * 60 * 1000;
+    const slots = rawSlots.map((s) => {
+      const iso = typeof s === 'string' ? s : s.startTime;
+      const start = new Date(iso);
+      return { startTime: start.toISOString(), endTime: new Date(start.getTime() + durationMs).toISOString() };
+    });
 
     return (
       <div className="grid grid-cols-4 gap-2 mt-2 max-h-48 overflow-y-auto">

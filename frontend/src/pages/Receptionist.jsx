@@ -446,7 +446,9 @@ function AvailabilitySection({ services, professionals }) {
       if (availability.reason) {
         setAvailReason(availability.reason);
       } else {
-        setSlots(availability.slots ?? []);
+        // API returns slots as ISO strings; normalize to {startTime} objects
+        const raw = availability.slots ?? [];
+        setSlots(raw.map((s) => ({ startTime: typeof s === 'string' ? s : s.startTime })));
       }
     } catch (err) {
       setCheckError(err.message || 'Failed to check availability');
