@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 ## Current Position
 
 Phase: 5 of 8 (Frontend Foundation + Auth)
-Plan: 1 of 7 complete
+Plan: 2 of 7 complete
 Status: In progress
-Last activity: 2026-03-14 — Completed 05-01-PLAN.md (AdminRole migration + requireRole middleware)
+Last activity: 2026-03-14 — Completed 05-02-PLAN.md (Admin API endpoints: user CRUD, client list, booking status, dashboard stats)
 
-Progress: [###########░░░░░░░░░] 55% (v1.0 complete, v2.0 plan 05-01 done)
+Progress: [############░░░░░░░░] 57% (v1.0 complete, v2.0 plans 05-01, 05-02 done)
 
 ## Milestone Summary
 
@@ -49,6 +49,8 @@ All v1.0 decisions logged in PROJECT.md Key Decisions table.
 - Two-migration strategy: initial ADMIN default (existing users), then RECEPTIONIST default (new users)
 - requireRole(...roles) middleware pattern for protecting admin-only endpoints
 - CORS: origin false in production (same-origin static serve), localhost:5173 in dev
+- requireRole('ADMIN') on user management only; client/booking/dashboard accessible to all authenticated admins
+- updateBookingStatus: no transition guard (simple admin override, business rules added when needed)
 
 ### Pending Todos
 
@@ -61,5 +63,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-14
-Stopped at: Completed 05-01-PLAN.md, ready for 05-02
+Stopped at: Completed 05-02-PLAN.md, ready for 05-03
 Resume file: None
