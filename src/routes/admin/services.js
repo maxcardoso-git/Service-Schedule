@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { adminAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import {
+  listAllServices,
   createService,
   updateService,
   deactivateService,
@@ -23,7 +24,21 @@ const serviceBodySchema = z.object({
   description: z.string().optional(),
   durationMin: z.number().int().min(5).max(480),
   price: z.number().positive(),
+  active: z.boolean().optional(),
 });
+
+/**
+ * GET /api/admin/services
+ * List all services (active and inactive) for admin management.
+ * Returns 200 { data: services[] }.
+ */
+router.get(
+  '/',
+  asyncHandler(async (_req, res) => {
+    const services = await listAllServices();
+    res.json({ data: services });
+  })
+);
 
 /**
  * POST /api/admin/services

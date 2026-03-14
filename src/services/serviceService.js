@@ -20,6 +20,26 @@ export async function listActiveServices() {
 }
 
 /**
+ * List ALL services (active and inactive), ordered alphabetically by name.
+ * Used by admin management interface.
+ * @returns {Promise<Array>} Array of all service records.
+ */
+export async function listAllServices() {
+  return prisma.service.findMany({
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      durationMin: true,
+      price: true,
+      active: true,
+      createdAt: true,
+    },
+    orderBy: { name: 'asc' },
+  });
+}
+
+/**
  * Get a single service by ID, including its assigned professionals.
  * Only active professionals are returned in the professionals list.
  * @param {string} id - UUID of the service.
@@ -85,12 +105,13 @@ export async function updateService(id, data) {
     throw new NotFoundError('Service not found', 'SERVICE_NOT_FOUND');
   }
 
-  const { name, description, durationMin, price } = data;
+  const { name, description, durationMin, price, active } = data;
   const updateData = {};
   if (name !== undefined) updateData.name = name;
   if (description !== undefined) updateData.description = description;
   if (durationMin !== undefined) updateData.durationMin = durationMin;
   if (price !== undefined) updateData.price = price;
+  if (active !== undefined) updateData.active = active;
 
   return prisma.service.update({ where: { id }, data: updateData });
 }
