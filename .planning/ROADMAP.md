@@ -144,7 +144,16 @@ Plans:
   4. A session that expires automatically redirects the user to the login page without a white screen or JS error
   5. The React frontend is served by Express as static files from a single PM2 process (no separate frontend server in production)
 
-**Plans:** TBD
+**Plans:** 7 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Backend auth infrastructure (AdminRole migration, requireRole middleware, login JWT fix, CORS config)
+- [ ] 05-02-PLAN.md — Backend new endpoints (user CRUD, client list, booking status, dashboard stats)
+- [ ] 05-03-PLAN.md — Frontend scaffold (Vite 8, React 19, Tailwind v4, shadcn/ui, path aliases, API proxy)
+- [ ] 05-04-PLAN.md — Auth flow (Zustand auth store, API client, login page, ProtectedRoute)
+- [ ] 05-05-PLAN.md — Layout + role routing (AppLayout, Sidebar, Header, Dashboard page)
+- [ ] 05-06-PLAN.md — User management (CRUD table with create/edit dialogs)
+- [ ] 05-07-PLAN.md — Production serving + end-to-end verification
 
 ---
 
@@ -214,7 +223,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 2. Scheduling Engine | v1.0 | 3/3 | Complete | 2026-03-13 |
 | 3. Payment Engine | v1.0 | 2/2 | Complete | 2026-03-13 |
 | 4. Conversation Tracking + Integration Polish | v1.0 | 2/2 | Complete | 2026-03-13 |
-| 5. Frontend Foundation + Auth | v2.0 | 0/TBD | Not started | - |
+| 5. Frontend Foundation + Auth | v2.0 | 0/7 | Planned | - |
 | 6. Services & Professionals Management | v2.0 | 0/TBD | Not started | - |
 | 7. Calendar, Bookings & Client Management | v2.0 | 0/TBD | Not started | - |
 | 8. Receptionist Interface | v2.0 | 0/TBD | Not started | - |
