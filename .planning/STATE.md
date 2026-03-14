@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 ## Current Position
 
 Phase: 7 of 8 (Calendar, Bookings + Clients) — In progress
-Plan: 1 of 3 complete
+Plan: 2 of 3 complete
 Status: In progress
-Last activity: 2026-03-14 — Completed 07-01-PLAN.md (Admin booking list, client endpoints, dashboard KPIs, FullCalendar installed)
+Last activity: 2026-03-14 — Completed 07-02-PLAN.md (Calendar page with FullCalendar, 7-KPI Dashboard, /admin/calendar route)
 
 Progress: [########################] 89% (v1.0 complete, v2.0 Phase 5 complete, Phase 6 complete, Phase 7 plan 1/3 done)
 
@@ -52,6 +52,11 @@ All v1.0 decisions logged in PROJECT.md Key Decisions table.
 - revenueToday via $queryRaw SUM — Prisma ORM lacks join-based aggregation, raw SQL needed
 - occupancyPercent: (non-cancelled bookings / activeProfessionals * 16 slots) * 100, capped at 100 — simple dashboard approximation
 - by-phone route placed before /:id/appointments — prevents Express treating literal "by-phone" as UUID param
+- FullCalendar locale must be imported as object from @fullcalendar/core/locales/pt-br (not passed as string prop)
+- FullCalendar extendedProps.booking carries full booking object for event click handlers
+- STATUS_TRANSITIONS map (object keyed by status) replaces switch/if chains for reachable-states logic
+- Fetch all bookings without date filter for small salon — TODO added for future date-range scale
+- Dashboard 2-row layout: 4-col primary KPIs (bookings, revenue, no-shows, occupancy) + 3-col secondary
 
 - Backend runs on Express + Prisma + PostgreSQL at port 3150 on VPS 72.61.52.70
 - API Key auth for agents, JWT for admin users
@@ -88,6 +93,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-14T14:44:19Z
-Stopped at: Completed 07-01-PLAN.md — Admin booking list endpoint, client CRUD routes, dashboard KPIs, FullCalendar 6 installed.
+Last session: 2026-03-14T14:51:00Z
+Stopped at: Completed 07-02-PLAN.md — Calendar page (FullCalendar + status transitions) and Dashboard 7 KPI cards.
 Resume file: None
