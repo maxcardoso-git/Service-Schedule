@@ -2,25 +2,29 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-13)
+See: .planning/PROJECT.md (updated 2026-03-14)
 
 **Core value:** Permitir que agentes de IA realizem todas as operações de agenda de forma autônoma, com rastreabilidade conversacional e interface administrativa para operação humana.
-**Current focus:** v2.0 Frontend — Not started (defining requirements)
+**Current focus:** v2.0 Frontend — Phase 5 (Frontend Foundation + Auth)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 5 of 8 (Frontend Foundation + Auth)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-03-13 — Milestone v2.0 started
+Status: Ready to plan
+Last activity: 2026-03-14 — v2.0 roadmap created (Phases 5-8)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [##########░░░░░░░░░░] 50% (v1.0 complete, v2.0 starting)
 
 ## Milestone Summary
 
 **v1.0 AI Scheduling API — SHIPPED 2026-03-13**
 - 4 phases, 11 plans, 28 requirements, ~53 min
 - See: .planning/MILESTONES.md
+
+**v2.0 Frontend — IN PROGRESS**
+- 4 phases (5-8), 26 requirements
+- Admin dashboard + Receptionist interface
 
 ## Performance Metrics
 
@@ -39,7 +43,9 @@ All v1.0 decisions logged in PROJECT.md Key Decisions table.
 - API Key auth for agents, JWT for admin users
 - All columns camelCase (no @map in Prisma)
 - Prisma migrate workflow (not db push)
-- Swagger/OpenAPI at /api-docs
+- v2.0: React 19 + Vite 8 + shadcn/ui + TanStack Query + FullCalendar 6
+- v2.0: Express serves static files (single PM2 process, no separate frontend server)
+- v2.0: AdminUser gains role field (ADMIN, RECEPTIONIST) via migration
 
 ### Pending Todos
 
@@ -51,6 +57,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-13
-Stopped at: Starting v2.0 Frontend milestone
+Last session: 2026-03-14
+Stopped at: v2.0 roadmap created, ready to plan Phase 5
 Resume file: None

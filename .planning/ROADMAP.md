@@ -4,6 +4,11 @@
 
 This platform exposes a REST API backend enabling OrchestratorAI agents to autonomously perform all scheduling operations at a beauty salon — from client lookup through slot discovery, pre-reservation, payment generation, and booking confirmation. The build follows a strict dependency chain: foundation and data catalogs first, then the scheduling engine (the highest-risk and highest-value component), then the payment layer, and finally conversation traceability. All 8 capability-mapped endpoints become operational by end of Phase 2, with the full v1 surface complete by Phase 4.
 
+## Milestones
+
+- v1.0 AI Scheduling API — Phases 1-4 (shipped 2026-03-13)
+- v2.0 Frontend — Phases 5-8 (in progress)
+
 ## Phases
 
 **Phase Numbering:**
@@ -12,12 +17,13 @@ This platform exposes a REST API backend enabling OrchestratorAI agents to auton
 
 Decimal phases appear between their surrounding integers in numeric order.
 
+<details>
+<summary>v1.0 AI Scheduling API (Phases 1-4) - SHIPPED 2026-03-13</summary>
+
 - [x] **Phase 1: Foundation + Identity + Catalog** - Running Express server with API key auth, client CRUD, and services/professionals catalog
 - [x] **Phase 2: Scheduling Engine** - Slot generation, pre-reservation with TTL, atomic booking with DB-level conflict detection, confirm/cancel lifecycle
 - [x] **Phase 3: Payment Engine** - Simulated PIX payment intent creation, status tracking, and dev simulation endpoint
 - [x] **Phase 4: Conversation Tracking + Integration Polish** - ConversationId linkage, booking query by conversation, Swagger docs, final API hardening
-
-## Phase Details
 
 ### Phase 1: Foundation + Identity + Catalog
 
@@ -108,16 +114,107 @@ Plans:
 - [x] 04-01-PLAN.md — ConversationLink model, migration, fire-and-forget link creation in bookingService, GET /api/bookings?conversationId query endpoint
 - [x] 04-02-PLAN.md — Swagger/OpenAPI setup (swagger-jsdoc + swagger-ui-express), @openapi annotations on all route files, /api-docs endpoint
 
+</details>
+
+---
+
+## v2.0 Frontend (Phases 5-8)
+
+**Milestone Goal:** Admin dashboard and receptionist interface with calendar view, booking management, visual CRUD for services/professionals, and simplified receptionist experience -- all served as a single PM2 process from the existing Express backend.
+
+- [ ] **Phase 5: Frontend Foundation + Auth** - React scaffold, backend prep (role migration, CORS, new endpoints), login, role-based routing, user management
+- [ ] **Phase 6: Services & Professionals Management** - Admin CRUD tables and forms for services, professionals, service assignments, and working hours
+- [ ] **Phase 7: Calendar, Bookings & Client Management** - FullCalendar integration, booking creation/status management, KPI dashboard, client search and history
+- [ ] **Phase 8: Receptionist Interface** - Simplified today-only agenda, quick booking flow, phone lookup, and availability check
+
+## Phase Details
+
+### Phase 5: Frontend Foundation + Auth
+
+**Goal**: An admin can log in to the web interface, see role-appropriate navigation, and manage user accounts -- with the React app scaffolded, backend role infrastructure in place, and Express serving the frontend build.
+
+**Depends on**: Phase 4 (v1.0 backend complete)
+
+**Requirements**: FINF-01, FINF-02, FINF-03, FAUTH-01, FAUTH-02, FAUTH-03, FAUTH-04, FAUTH-05
+
+**Success Criteria** (what must be TRUE):
+  1. A user navigating to the app URL sees a login page, can enter email/password, and upon success is redirected to their role-appropriate dashboard (admin or receptionist)
+  2. An admin user sees full navigation (dashboard, services, professionals, calendar, clients, users); a receptionist user sees only the receptionist interface
+  3. An admin can create a new user account with ADMIN or RECEPTIONIST role, edit their details, and deactivate them -- changes take effect on the user's next login
+  4. A session that expires automatically redirects the user to the login page without a white screen or JS error
+  5. The React frontend is served by Express as static files from a single PM2 process (no separate frontend server in production)
+
+**Plans:** TBD
+
+---
+
+### Phase 6: Services & Professionals Management
+
+**Goal**: An admin can visually manage the full services and professionals catalog -- creating, editing, deactivating records, assigning services to professionals, and configuring weekly working hours -- replacing direct API/database manipulation.
+
+**Depends on**: Phase 5
+
+**Requirements**: FMGMT-01, FMGMT-02, FMGMT-03, FMGMT-04, FMGMT-05, FMGMT-06
+
+**Success Criteria** (what must be TRUE):
+  1. An admin can view all services in a searchable table, click to edit any service's name/duration/price, and toggle its active status -- changes are immediately reflected in the table without page reload
+  2. An admin can view all professionals in a table showing their assigned services, click to edit profile details, and toggle active status
+  3. An admin can open a professional's detail view and assign or remove services using a multi-select control -- the professional's availability query reflects only assigned services
+  4. An admin can configure a professional's working hours via a visual weekly grid (Mon-Sun), setting start/end times per day -- the availability engine respects these hours for slot generation
+
+**Plans:** TBD
+
+---
+
+### Phase 7: Calendar, Bookings & Client Management
+
+**Goal**: An admin can see all bookings on a calendar, create new bookings through a guided flow, manage booking statuses, look up clients, and view dashboard KPIs -- the core operational interface for running the salon day-to-day.
+
+**Depends on**: Phase 6 (needs services/professionals data and established component patterns)
+
+**Requirements**: FCAL-01, FCAL-02, FCAL-03, FCAL-04, FCAL-05, FCLNT-01, FCLNT-02, FCLNT-03
+
+**Success Criteria** (what must be TRUE):
+  1. An admin viewing the calendar sees bookings as time blocks in per-professional columns, can switch between day and week views, and booking blocks are color-coded by status (yellow=pre-reserved, blue=confirmed, green=completed, gray=cancelled, red=no-show)
+  2. An admin can create a booking by searching/registering a client, selecting a service and professional, picking an available slot, and confirming -- the new booking appears on the calendar immediately
+  3. An admin can click a booking and transition its status (confirm, cancel, complete, no-show) -- the color updates and the action is persisted
+  4. An admin can search clients by phone, register new clients, and view any client's appointment history in a detail view
+  5. The dashboard displays KPI cards showing bookings today, revenue today, no-show count, and occupancy percentage -- values update when the page loads
+
+**Plans:** TBD
+
+---
+
+### Phase 8: Receptionist Interface
+
+**Goal**: A receptionist can handle walk-ins and phone calls efficiently with a focused, today-only interface -- seeing the day's agenda, quickly creating bookings, looking up clients, and checking slot availability without navigating the full admin dashboard.
+
+**Depends on**: Phase 7 (reuses calendar components, booking flow, and client search)
+
+**Requirements**: FRCPT-01, FRCPT-02, FRCPT-03, FRCPT-04
+
+**Success Criteria** (what must be TRUE):
+  1. A receptionist logging in sees today's agenda as a timeline grouped by professional, showing all bookings for the current day with status indicators
+  2. A receptionist can create a booking in 3 steps (phone lookup, service + slot selection, confirm) without navigating away from the receptionist view
+  3. A receptionist can search a client by phone and immediately see the client's name and date of last visit
+  4. A receptionist can check available slots for a given service and date, seeing which professionals have openings
+
+**Plans:** TBD
+
 ---
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Foundation + Identity + Catalog | 4/4 | Complete | 2026-03-13 |
-| 2. Scheduling Engine | 3/3 | Complete | 2026-03-13 |
-| 3. Payment Engine | 2/2 | Complete | 2026-03-13 |
-| 4. Conversation Tracking + Integration Polish | 2/2 | Complete | 2026-03-13 |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. Foundation + Identity + Catalog | v1.0 | 4/4 | Complete | 2026-03-13 |
+| 2. Scheduling Engine | v1.0 | 3/3 | Complete | 2026-03-13 |
+| 3. Payment Engine | v1.0 | 2/2 | Complete | 2026-03-13 |
+| 4. Conversation Tracking + Integration Polish | v1.0 | 2/2 | Complete | 2026-03-13 |
+| 5. Frontend Foundation + Auth | v2.0 | 0/TBD | Not started | - |
+| 6. Services & Professionals Management | v2.0 | 0/TBD | Not started | - |
+| 7. Calendar, Bookings & Client Management | v2.0 | 0/TBD | Not started | - |
+| 8. Receptionist Interface | v2.0 | 0/TBD | Not started | - |

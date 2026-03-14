@@ -180,39 +180,40 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFR-06 | Phase 1 | Complete |
 | ADMN-01 | Phase 1 | Complete |
 | ADMN-02 | Phase 1 | Complete |
-| FAUTH-01 | — | Pending |
-| FAUTH-02 | — | Pending |
-| FAUTH-03 | — | Pending |
-| FAUTH-04 | — | Pending |
-| FAUTH-05 | — | Pending |
-| FMGMT-01 | — | Pending |
-| FMGMT-02 | — | Pending |
-| FMGMT-03 | — | Pending |
-| FMGMT-04 | — | Pending |
-| FMGMT-05 | — | Pending |
-| FMGMT-06 | — | Pending |
-| FCAL-01 | — | Pending |
-| FCAL-02 | — | Pending |
-| FCAL-03 | — | Pending |
-| FCAL-04 | — | Pending |
-| FCAL-05 | — | Pending |
-| FCLNT-01 | — | Pending |
-| FCLNT-02 | — | Pending |
-| FCLNT-03 | — | Pending |
-| FRCPT-01 | — | Pending |
-| FRCPT-02 | — | Pending |
-| FRCPT-03 | — | Pending |
-| FRCPT-04 | — | Pending |
-| FINF-01 | — | Pending |
-| FINF-02 | — | Pending |
-| FINF-03 | — | Pending |
+| FAUTH-01 | Phase 5 | Pending |
+| FAUTH-02 | Phase 5 | Pending |
+| FAUTH-03 | Phase 5 | Pending |
+| FAUTH-04 | Phase 5 | Pending |
+| FAUTH-05 | Phase 5 | Pending |
+| FINF-01 | Phase 5 | Pending |
+| FINF-02 | Phase 5 | Pending |
+| FINF-03 | Phase 5 | Pending |
+| FMGMT-01 | Phase 6 | Pending |
+| FMGMT-02 | Phase 6 | Pending |
+| FMGMT-03 | Phase 6 | Pending |
+| FMGMT-04 | Phase 6 | Pending |
+| FMGMT-05 | Phase 6 | Pending |
+| FMGMT-06 | Phase 6 | Pending |
+| FCAL-01 | Phase 7 | Pending |
+| FCAL-02 | Phase 7 | Pending |
+| FCAL-03 | Phase 7 | Pending |
+| FCAL-04 | Phase 7 | Pending |
+| FCAL-05 | Phase 7 | Pending |
+| FCLNT-01 | Phase 7 | Pending |
+| FCLNT-02 | Phase 7 | Pending |
+| FCLNT-03 | Phase 7 | Pending |
+| FRCPT-01 | Phase 8 | Pending |
+| FRCPT-02 | Phase 8 | Pending |
+| FRCPT-03 | Phase 8 | Pending |
+| FRCPT-04 | Phase 8 | Pending |
 
 **Coverage:**
 - v1.0 requirements: 28 total (all Complete)
 - v2.0 requirements: 26 total
-- Mapped to phases: 0/26
-- Unmapped: 26
+- Mapped to phases: 26/26
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-13*
 *v2.0 requirements added: 2026-03-14*
+*v2.0 traceability updated: 2026-03-14*
