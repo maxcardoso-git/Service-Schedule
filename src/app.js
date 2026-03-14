@@ -3,6 +3,8 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import healthRouter from './routes/health.js';
 import adminAuthRouter from './routes/admin/auth.js';
@@ -83,6 +85,19 @@ app.use('/api/payments', paymentsRouter);
 
 // Swagger API documentation — NOT behind API key auth
 app.use('/api-docs', serve, setup(swaggerSpec));
+
+// Serve frontend build in production
+if (process.env.NODE_ENV === 'production') {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const distPath = path.join(__dirname, '..', 'frontend', 'dist');
+  app.use(express.static(distPath));
+
+  // SPA fallback: non-API routes serve index.html
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
 // Global error handler — MUST be last middleware
 app.use(errorHandler);
