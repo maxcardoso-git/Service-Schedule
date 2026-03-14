@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { adminAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
+import prisma from '../../lib/prisma.js';
 import { updateBookingStatus } from '../../services/bookingService.js';
 
 const router = Router();
@@ -13,6 +14,58 @@ router.use(adminAuth);
 // Async wrapper to forward thrown errors to Express error handler
 const asyncHandler = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
+
+const bookingStatus = z.enum(['PRE_RESERVED', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW']);
+
+const listQuerySchema = z.object({
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be YYYY-MM-DD')
+    .optional(),
+  professionalId: z.string().uuid().optional(),
+  status: bookingStatus.optional(),
+});
+
+/**
+ * GET /api/admin/bookings
+ * List bookings with optional filters: date, professionalId, status.
+ * Returns { data: bookings[] } with client, service, and professional relations.
+ */
+router.get(
+  '/',
+  validate({ query: listQuerySchema }),
+  asyncHandler(async (req, res) => {
+    const { date, professionalId, status } = req.query;
+
+    const where = {};
+
+    if (date) {
+      const dayStart = new Date(`${date}T00:00:00Z`);
+      const dayEnd = new Date(`${date}T23:59:59.999Z`);
+      where.startTime = { gte: dayStart, lte: dayEnd };
+    }
+
+    if (professionalId) {
+      where.professionalId = professionalId;
+    }
+
+    if (status) {
+      where.status = status;
+    }
+
+    const bookings = await prisma.booking.findMany({
+      where,
+      include: {
+        client: { select: { id: true, name: true, phone: true } },
+        services: { include: { service: { select: { id: true, name: true, durationMin: true } } } },
+        professional: { select: { id: true, name: true } },
+      },
+      orderBy: { startTime: 'asc' },
+    });
+
+    res.json({ data: bookings });
+  })
+);
 
 /**
  * PATCH /api/admin/bookings/:id/status
