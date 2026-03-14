@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 
 ## Current Position
 
-Phase: 6 of 8 (Services + Professionals Management) — In progress
-Plan: 2 of 3 complete
-Status: In progress
-Last activity: 2026-03-14 — Completed 06-02-PLAN.md (Professionals CRUD page + service assignment)
+Phase: 6 of 8 (Services + Professionals Management) — Phase complete
+Plan: 3 of 3 complete
+Status: Phase complete
+Last activity: 2026-03-14 — Completed 06-03-PLAN.md (WorkingHoursDialog for professional weekly schedule)
 
-Progress: [#####################░] 82% (v1.0 complete, v2.0 Phase 5 complete, Phase 6 plans 1-2 done)
+Progress: [######################] 86% (v1.0 complete, v2.0 Phase 5 complete, Phase 6 all 3 plans done)
 
 ## Milestone Summary
 
@@ -45,6 +45,9 @@ All v1.0 decisions logged in PROJECT.md Key Decisions table.
 - GET /admin/professionals route placed before /:id to prevent Express treating bare "/" as UUID param
 - ServiceAssignmentDialog fetches /admin/services with graceful error state for wave-1 parallel execution
 - assignProfessional state stores full professional object so dialog shows current assignments without extra fetch
+- DAY_DISPLAY_ORDER [1,2,3,4,5,6,0] for Mon-first grid while preserving 0-6 dayOfWeek stored values
+- defaultHours() factory (not constant) to ensure fresh mutable array per dialog open
+- Only enabled days sent in PUT /working-hours payload — backend does full replacement implicitly clearing disabled days
 
 - Backend runs on Express + Prisma + PostgreSQL at port 3150 on VPS 72.61.52.70
 - API Key auth for agents, JWT for admin users
@@ -81,6 +84,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-14T14:45:02Z
-Stopped at: Completed 06-02-PLAN.md — Professionals CRUD page with service assignment done.
+Last session: 2026-03-14T15:10:50Z
+Stopped at: Completed 06-03-PLAN.md — WorkingHoursDialog added to Professionals page. Phase 6 complete.
 Resume file: None
