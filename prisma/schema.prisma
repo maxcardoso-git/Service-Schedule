@@ -151,14 +151,20 @@ model ConversationLink {
   @@map("conversation_links")
 }
 
+enum AdminRole {
+  ADMIN
+  RECEPTIONIST
+}
+
 model AdminUser {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String   @db.VarChar(200)
-  email     String   @unique @db.VarChar(255)
-  password  String   @db.VarChar(255)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt @db.Timestamptz
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @db.VarChar(200)
+  email     String    @unique @db.VarChar(255)
+  password  String    @db.VarChar(255)
+  role      AdminRole @default(RECEPTIONIST)
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now()) @db.Timestamptz
+  updatedAt DateTime  @updatedAt @db.Timestamptz
 
   @@map("admin_users")
 }

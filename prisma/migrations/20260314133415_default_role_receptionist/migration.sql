@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "admin_users" ALTER COLUMN "role" SET DEFAULT 'RECEPTIONIST';
