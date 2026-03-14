@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-14)
 
 **Core value:** Permitir que agentes de IA realizem todas as operações de agenda de forma autônoma, com rastreabilidade conversacional e interface administrativa para operação humana.
-**Current focus:** v2.0 Frontend — Phase 8 (Receptionist interface)
+**Current focus:** v2.0 Frontend — COMPLETE
 
 ## Current Position
 
-Phase: 7 of 8 (Calendar, Bookings + Clients) — Phase complete
-Plan: 3 of 3 complete
-Status: Phase complete — ready for Phase 8
-Last activity: 2026-03-14 — Completed 07-03-PLAN.md (Clients page, NewBookingDialog 5-step flow, admin availability+create endpoints, New Booking button on Calendar)
+Phase: 8 of 8 (Receptionist Interface) — Phase complete
+Plan: 1 of 1 complete
+Status: ALL PHASES COMPLETE — v2.0 Frontend milestone shipped
+Last activity: 2026-03-14 — Completed 08-01-PLAN.md (Receptionist page, 3-step booking dialog, /receptionist route)
 
-Progress: [##########################] 95% (v1.0 complete, v2.0 Phases 5-7 complete)
+Progress: [████████████████████████████] 100% (v1.0 complete, v2.0 Phases 5-8 complete)
 
 ## Milestone Summary
 
@@ -22,7 +22,7 @@ Progress: [##########################] 95% (v1.0 complete, v2.0 Phases 5-7 compl
 - 4 phases, 11 plans, 28 requirements, ~53 min
 - See: .planning/MILESTONES.md
 
-**v2.0 Frontend — IN PROGRESS**
+**v2.0 Frontend — SHIPPED 2026-03-14**
 - 4 phases (5-8), 26 requirements
 - Admin dashboard + Receptionist interface
 
@@ -62,6 +62,10 @@ All v1.0 decisions logged in PROJECT.md Key Decisions table.
 - STATUS_TRANSITIONS map (object keyed by status) replaces switch/if chains for reachable-states logic
 - Fetch all bookings without date filter for small salon — TODO added for future date-range scale
 - Dashboard 2-row layout: 4-col primary KPIs (bookings, revenue, no-shows, occupancy) + 3-col secondary
+- STATUS_COLORS/LABELS/TRANSITIONS copied into Receptionist.jsx (not imported from Calendar.jsx — page file, not shared)
+- RootRedirect inline component in App.jsx: RECEPTIONIST role -> /receptionist, otherwise Dashboard
+- Receptionist 3-step dialog combines NewBookingDialog steps 2-4 into one scrollable step (service + professional + date+slot)
+- RECEPTIONIST ProtectedRoute sibling to ADMIN block inside AppLayout children
 
 - Backend runs on Express + Prisma + PostgreSQL at port 3150 on VPS 72.61.52.70
 - API Key auth for agents, JWT for admin users
@@ -98,6 +102,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-14T14:57:02Z
-Stopped at: Completed 07-03-PLAN.md — Clients page, NewBookingDialog, admin booking endpoints. Phase 7 fully done.
+Last session: 2026-03-14T20:37:04Z
+Stopped at: Completed 08-01-PLAN.md — Receptionist page, ReceptionistBookingDialog, App.jsx route. v2.0 milestone complete.
 Resume file: None
