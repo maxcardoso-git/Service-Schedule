@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 ## Current Position
 
 Phase: 5 of 8 (Frontend Foundation + Auth)
-Plan: 5 of 7 complete
+Plan: 6 of 7 complete
 Status: In progress
-Last activity: 2026-03-14 — Completed 05-05-PLAN.md (AppLayout, Sidebar, Header, Dashboard with stat cards)
+Last activity: 2026-03-14 — Completed 05-06-PLAN.md (Users page: CRUD table, create/edit dialogs, active toggle)
 
-Progress: [###############░░░░░] 68% (v1.0 complete, v2.0 plans 05-01 through 05-05 done)
+Progress: [################░░░░] 71% (v1.0 complete, v2.0 plans 05-01 through 05-06 done)
 
 ## Milestone Summary
 
@@ -58,6 +58,9 @@ All v1.0 decisions logged in PROJECT.md Key Decisions table.
 - JWT decoded client-side with atob + JSON.parse (no external JWT library)
 - ProtectedRoute uses Outlet pattern for composability
 - useAuthStore.getState() for imperative access (apiFetch, login handler), useAuthStore(selector) for reactive reads
+- Controlled dialog open state (open + onOpenChange) instead of DialogTrigger — required for pre-populating dialogs with row data
+- Separate inline toggle mutation from dialog mutation — one-click UX for common active/inactive toggle
+- CRUD page pattern: useQuery fetch + useMutation POST/PATCH + invalidateQueries(['queryKey']) + toast
 
 ### Pending Todos
 
@@ -69,6 +72,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-14T13:50:15Z
-Stopped at: Completed 05-05-PLAN.md, ready for 05-06
+Last session: 2026-03-14T13:56:00Z
+Stopped at: Completed 05-06-PLAN.md, ready for 05-07
 Resume file: None
