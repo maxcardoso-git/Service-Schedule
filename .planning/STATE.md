@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 
 ## Current Position
 
-Phase: 5 of 8 (Frontend Foundation + Auth) — COMPLETE
-Plan: 7 of 7 complete
-Status: Phase complete
-Last activity: 2026-03-14 — Completed 05-07-PLAN.md (production static serving + SPA fallback)
+Phase: 6 of 8 (Services + Professionals Management) — In progress
+Plan: 1 of 3 complete
+Status: In progress
+Last activity: 2026-03-14 — Completed 06-01-PLAN.md (Services CRUD page + backend list endpoint)
 
-Progress: [##################░░] 78% (v1.0 complete, v2.0 Phase 5 complete — 05-01 through 05-07 done)
+Progress: [####################░░] 80% (v1.0 complete, v2.0 Phase 5 complete, Phase 6 plan 1 done)
 
 ## Milestone Summary
 
@@ -38,6 +38,10 @@ Progress: [##################░░] 78% (v1.0 complete, v2.0 Phase 5 complete �
 ### Decisions
 
 All v1.0 decisions logged in PROJECT.md Key Decisions table.
+
+- Active toggle reuses PUT /:id with { active: bool } rather than dedicated PATCH endpoint (minimal API surface)
+- GET route placed before PUT /:id in services router to avoid Express route conflicts
+- serviceBodySchema extended with active: z.boolean().optional() at schema level (all routes benefit)
 
 - Backend runs on Express + Prisma + PostgreSQL at port 3150 on VPS 72.61.52.70
 - API Key auth for agents, JWT for admin users
@@ -74,6 +78,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-14T14:05:00Z
-Stopped at: Completed 05-07-PLAN.md — Phase 5 complete. Awaiting user verification (checkpoint).
+Last session: 2026-03-14T18:24:12Z
+Stopped at: Completed 06-01-PLAN.md — Services CRUD page and backend list endpoint done.
 Resume file: None
