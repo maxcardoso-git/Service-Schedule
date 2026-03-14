@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 ## Current Position
 
 Phase: 5 of 8 (Frontend Foundation + Auth)
-Plan: 2 of 7 complete
+Plan: 3 of 7 complete
 Status: In progress
-Last activity: 2026-03-14 — Completed 05-02-PLAN.md (Admin API endpoints: user CRUD, client list, booking status, dashboard stats)
+Last activity: 2026-03-14 — Completed 05-03-PLAN.md (Frontend scaffold: Vite 8, Tailwind v4, shadcn/ui, path alias, API proxy)
 
-Progress: [############░░░░░░░░] 57% (v1.0 complete, v2.0 plans 05-01, 05-02 done)
+Progress: [#############░░░░░░░] 60% (v1.0 complete, v2.0 plans 05-01, 05-02, 05-03 done)
 
 ## Milestone Summary
 
@@ -51,6 +51,9 @@ All v1.0 decisions logged in PROJECT.md Key Decisions table.
 - CORS: origin false in production (same-origin static serve), localhost:5173 in dev
 - requireRole('ADMIN') on user management only; client/booking/dashboard accessible to all authenticated admins
 - updateBookingStatus: no transition guard (simple admin override, business rules added when needed)
+- @tailwindcss/vite requires --legacy-peer-deps with Vite 8 (peer dep range not updated yet, functionally compatible)
+- shadcn style: base-nova (default); JSX not TypeScript; button uses @base-ui/react primitive
+- shadcn add uses -o (overwrite) flag, not --force (removed in shadcn@4)
 
 ### Pending Todos
 
@@ -63,5 +66,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-14
-Stopped at: Completed 05-02-PLAN.md, ready for 05-03
+Stopped at: Completed 05-03-PLAN.md, ready for 05-04
 Resume file: None
