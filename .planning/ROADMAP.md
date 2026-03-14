@@ -218,7 +218,10 @@ Plans:
   3. A receptionist can search a client by phone and immediately see the client's name and date of last visit
   4. A receptionist can check available slots for a given service and date, seeing which professionals have openings
 
-**Plans:** TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 08-01-PLAN.md — Receptionist page (today's agenda by professional, client search, availability check) + 3-step booking dialog + route wiring
 
 ---
 
@@ -236,4 +239,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 5. Frontend Foundation + Auth | v2.0 | 0/7 | Planned | - |
 | 6. Services & Professionals Management | v2.0 | 0/3 | Not started | - |
 | 7. Calendar, Bookings & Client Management | v2.0 | 0/3 | Not started | - |
-| 8. Receptionist Interface | v2.0 | 0/TBD | Not started | - |
+| 8. Receptionist Interface | v2.0 | 0/1 | Not started | - |
