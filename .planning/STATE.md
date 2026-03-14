@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-14)
 
 **Core value:** Permitir que agentes de IA realizem todas as operações de agenda de forma autônoma, com rastreabilidade conversacional e interface administrativa para operação humana.
-**Current focus:** v2.0 Frontend — Phase 5 (Frontend Foundation + Auth)
+**Current focus:** v2.0 Frontend — Phase 6 (Scheduling UI)
 
 ## Current Position
 
-Phase: 5 of 8 (Frontend Foundation + Auth)
-Plan: 6 of 7 complete
-Status: In progress
-Last activity: 2026-03-14 — Completed 05-06-PLAN.md (Users page: CRUD table, create/edit dialogs, active toggle)
+Phase: 5 of 8 (Frontend Foundation + Auth) — COMPLETE
+Plan: 7 of 7 complete
+Status: Phase complete
+Last activity: 2026-03-14 — Completed 05-07-PLAN.md (production static serving + SPA fallback)
 
-Progress: [################░░░░] 71% (v1.0 complete, v2.0 plans 05-01 through 05-06 done)
+Progress: [##################░░] 78% (v1.0 complete, v2.0 Phase 5 complete — 05-01 through 05-07 done)
 
 ## Milestone Summary
 
@@ -61,6 +61,8 @@ All v1.0 decisions logged in PROJECT.md Key Decisions table.
 - Controlled dialog open state (open + onOpenChange) instead of DialogTrigger — required for pre-populating dialogs with row data
 - Separate inline toggle mutation from dialog mutation — one-click UX for common active/inactive toggle
 - CRUD page pattern: useQuery fetch + useMutation POST/PATCH + invalidateQueries(['queryKey']) + toast
+- Production static serving: express.static(frontend/dist) + GET * SPA fallback with /api guard, gated on NODE_ENV=production
+- ESM __dirname: path.dirname(fileURLToPath(import.meta.url)) inside the production block (scoped, not top-level)
 
 ### Pending Todos
 
@@ -72,6 +74,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-14T13:56:00Z
-Stopped at: Completed 05-06-PLAN.md, ready for 05-07
+Last session: 2026-03-14T14:05:00Z
+Stopped at: Completed 05-07-PLAN.md — Phase 5 complete. Awaiting user verification (checkpoint).
 Resume file: None
