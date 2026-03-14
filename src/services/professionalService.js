@@ -23,6 +23,10 @@ export async function listAllProfessionals() {
           },
         },
       },
+      workingHours: {
+        orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
+        select: { dayOfWeek: true, startTime: true, endTime: true },
+      },
     },
   });
 }

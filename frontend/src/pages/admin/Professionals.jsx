@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Scissors, Clock } from 'lucide-react';
 import { toast } from 'sonner';
@@ -153,7 +153,7 @@ function EditProfessionalDialog({ professional, open, onOpenChange }) {
   const [error, setError] = useState('');
 
   // Sync when professional prop changes
-  useState(() => {
+  useEffect(() => {
     if (professional) {
       setForm({
         name: professional.name,
@@ -161,7 +161,7 @@ function EditProfessionalDialog({ professional, open, onOpenChange }) {
         phone: professional.phone ?? '',
       });
     }
-  });
+  }, [professional]);
 
   const mutation = useMutation({
     mutationFn: (data) =>
@@ -376,6 +376,7 @@ function ServiceAssignmentDialog({ professional, open, onOpenChange }) {
 }
 
 const DAY_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAY_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const DAY_DISPLAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 const defaultHours = () =>
@@ -385,28 +386,19 @@ function WorkingHoursDialog({ professional, open, onOpenChange }) {
   const queryClient = useQueryClient();
   const [hours, setHours] = useState(defaultHours());
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  // Load existing working hours when professional changes
-  useState(() => {
+  // Load existing working hours when dialog opens
+  useEffect(() => {
     if (professional && open) {
-      setLoading(true);
+      const fresh = defaultHours();
+      const workingHours = professional.workingHours ?? [];
+      workingHours.forEach(({ dayOfWeek, startTime, endTime }) => {
+        fresh[dayOfWeek] = { enabled: true, startTime, endTime };
+      });
+      setHours(fresh);
       setError('');
-      apiFetch('/admin/professionals/' + professional.id)
-        .then((res) => {
-          const fresh = defaultHours();
-          const workingHours = res?.data?.workingHours ?? [];
-          workingHours.forEach(({ dayOfWeek, startTime, endTime }) => {
-            fresh[dayOfWeek] = { enabled: true, startTime, endTime };
-          });
-          setHours(fresh);
-        })
-        .catch((err) => {
-          setError(err.message || 'Failed to load working hours');
-        })
-        .finally(() => setLoading(false));
     }
-  });
+  }, [professional, open]);
 
   const mutation = useMutation({
     mutationFn: (payload) =>
@@ -475,11 +467,6 @@ function WorkingHoursDialog({ professional, open, onOpenChange }) {
         </DialogHeader>
 
         <div className="py-2">
-          {loading && (
-            <p className="text-sm text-muted-foreground">Loading working hours...</p>
-          )}
-
-          {!loading && (
             <div className="flex flex-col gap-3">
               {DAY_DISPLAY_ORDER.map((dayIndex) => {
                 const day = hours[dayIndex];
@@ -517,7 +504,6 @@ function WorkingHoursDialog({ professional, open, onOpenChange }) {
                 );
               })}
             </div>
-          )}
 
           {error && (
             <p className="mt-3 rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -530,7 +516,7 @@ function WorkingHoursDialog({ professional, open, onOpenChange }) {
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={mutation.isPending || loading}>
+          <Button onClick={handleSave} disabled={mutation.isPending}>
             {mutation.isPending ? 'Saving...' : 'Save Hours'}
           </Button>
         </DialogFooter>
@@ -542,7 +528,7 @@ function WorkingHoursDialog({ professional, open, onOpenChange }) {
 function SkeletonRow() {
   return (
     <TableRow>
-      {[1, 2, 3, 4, 5].map((i) => (
+      {[1, 2, 3, 4, 5, 6].map((i) => (
         <TableCell key={i}>
           <div className="h-4 animate-pulse rounded bg-muted" />
         </TableCell>
@@ -604,6 +590,7 @@ export default function Professionals() {
               <TableHead>Name</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>Services</TableHead>
+              <TableHead>Availability</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -619,7 +606,7 @@ export default function Professionals() {
 
             {!isLoading && professionals.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
                   No professionals found.
                 </TableCell>
               </TableRow>
@@ -650,6 +637,25 @@ export default function Professionals() {
                             {ps.service.name}
                           </Badge>
                         ))}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {(!professional.workingHours || professional.workingHours.length === 0) ? (
+                      <span className="text-sm text-muted-foreground italic">Not set</span>
+                    ) : (
+                      <div className="flex flex-col gap-0.5">
+                        {DAY_DISPLAY_ORDER
+                          .filter((d) => professional.workingHours.some((wh) => wh.dayOfWeek === d))
+                          .map((d) => {
+                            const wh = professional.workingHours.find((w) => w.dayOfWeek === d);
+                            return (
+                              <span key={d} className="text-xs text-muted-foreground">
+                                <span className="font-medium text-foreground">{DAY_SHORT[d]}</span>{' '}
+                                {wh.startTime}–{wh.endTime}
+                              </span>
+                            );
+                          })}
                       </div>
                     )}
                   </TableCell>
