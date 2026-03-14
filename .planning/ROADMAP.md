@@ -195,7 +195,12 @@ Plans:
   4. An admin can search clients by phone, register new clients, and view any client's appointment history in a detail view
   5. The dashboard displays KPI cards showing bookings today, revenue today, no-show count, and occupancy percentage -- values update when the page loads
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Backend admin endpoints (booking list with filters, client CRUD under JWT, enhanced dashboard KPIs) + FullCalendar install
+- [ ] 07-02-PLAN.md — Calendar page (FullCalendar day/week views, color-coded bookings, status transitions) + Dashboard KPI update + route wiring
+- [ ] 07-03-PLAN.md — Clients page (search, register, history) + multi-step booking creation dialog + Calendar integration
 
 ---
 
@@ -230,5 +235,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 4. Conversation Tracking + Integration Polish | v1.0 | 2/2 | Complete | 2026-03-13 |
 | 5. Frontend Foundation + Auth | v2.0 | 0/7 | Planned | - |
 | 6. Services & Professionals Management | v2.0 | 0/3 | Not started | - |
-| 7. Calendar, Bookings & Client Management | v2.0 | 0/TBD | Not started | - |
+| 7. Calendar, Bookings & Client Management | v2.0 | 0/3 | Not started | - |
 | 8. Receptionist Interface | v2.0 | 0/TBD | Not started | - |
