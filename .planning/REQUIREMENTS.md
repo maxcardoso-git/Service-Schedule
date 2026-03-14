@@ -1,98 +1,150 @@
 # Requirements: Service-schedule — AI Scheduling Platform
 
 **Defined:** 2026-03-13
-**Core Value:** Permitir que agentes de IA realizem todas as operações de agenda de forma autônoma, com rastreabilidade conversacional.
+**Core Value:** Permitir que agentes de IA realizem todas as operações de agenda de forma autônoma, com rastreabilidade conversacional e interface administrativa para operação humana.
 
-## v1 Requirements
+## v1.0 Requirements
 
 ### Identity & Clients
 
-- [ ] **CLNT-01**: User can look up a client by phone number (returns client or 404)
-- [ ] **CLNT-02**: User can register a new client (name, phone, email)
-- [ ] **CLNT-03**: User can query a client's appointment history
+- [x] **CLNT-01**: User can look up a client by phone number (returns client or 404)
+- [x] **CLNT-02**: User can register a new client (name, phone, email)
+- [x] **CLNT-03**: User can query a client's appointment history
 
 ### Services Catalog
 
-- [ ] **SRVC-01**: User can list available services with name, duration, and price
-- [ ] **SRVC-02**: Admin can create/edit/deactivate services
-- [ ] **SRVC-03**: Admin can assign professionals to services (many-to-many)
-- [ ] **SRVC-04**: Admin can manage professional profiles and working hours
+- [x] **SRVC-01**: User can list available services with name, duration, and price
+- [x] **SRVC-02**: Admin can create/edit/deactivate services
+- [x] **SRVC-03**: Admin can assign professionals to services (many-to-many)
+- [x] **SRVC-04**: Admin can manage professional profiles and working hours
 
 ### Scheduling Engine
 
-- [ ] **SCHD-01**: User can query available time slots by date, service, and professional
-- [ ] **SCHD-02**: User can create a pre-reservation with TTL (5 min hold)
-- [ ] **SCHD-03**: User can confirm a booking (moves PRE_RESERVED → CONFIRMED)
-- [ ] **SCHD-04**: User can cancel a booking (frees slot)
-- [ ] **SCHD-05**: User can look up bookings by client phone
-- [ ] **SCHD-06**: Availability response distinguishes "fully booked" vs "not working" with next-available suggestion
-- [ ] **SCHD-07**: Conflict detection enforced at database level (partial unique index)
-- [ ] **SCHD-08**: Expired pre-reservations filtered at query time (not dependent on cleanup cron)
+- [x] **SCHD-01**: User can query available time slots by date, service, and professional
+- [x] **SCHD-02**: User can create a pre-reservation with TTL (5 min hold)
+- [x] **SCHD-03**: User can confirm a booking (moves PRE_RESERVED → CONFIRMED)
+- [x] **SCHD-04**: User can cancel a booking (frees slot)
+- [x] **SCHD-05**: User can look up bookings by client phone
+- [x] **SCHD-06**: Availability response distinguishes "fully booked" vs "not working" with next-available suggestion
+- [x] **SCHD-07**: Conflict detection enforced at database level (partial unique index)
+- [x] **SCHD-08**: Expired pre-reservations filtered at query time (not dependent on cleanup cron)
 
 ### Payment Engine
 
-- [ ] **PYMT-01**: User can generate a PIX payment intent for a booking (simulated)
-- [ ] **PYMT-02**: User can check payment status (PENDING/PAID/CANCELLED)
-- [ ] **PYMT-03**: Simulate payment endpoint marks payment as PAID (dev/test)
+- [x] **PYMT-01**: User can generate a PIX payment intent for a booking (simulated)
+- [x] **PYMT-02**: User can check payment status (PENDING/PAID/CANCELLED)
+- [x] **PYMT-03**: Simulate payment endpoint marks payment as PAID (dev/test)
 
 ### Conversation Tracking
 
-- [ ] **CONV-01**: Booking stores optional conversationId linking to OrchestratorAI session
-- [ ] **CONV-02**: User can query bookings by conversationId
+- [x] **CONV-01**: Booking stores optional conversationId linking to OrchestratorAI session
+- [x] **CONV-02**: User can query bookings by conversationId
 
 ### API Infrastructure
 
-- [ ] **INFR-01**: API key authentication middleware
-- [ ] **INFR-02**: Structured error responses with codes AI agents can act on
-- [ ] **INFR-03**: Idempotency key support on booking creation
-- [ ] **INFR-04**: Swagger/OpenAPI documentation at /api-docs
-- [ ] **INFR-05**: Request validation with Zod schemas
-- [ ] **INFR-06**: Health check endpoint
+- [x] **INFR-01**: API key authentication middleware
+- [x] **INFR-02**: Structured error responses with codes AI agents can act on
+- [x] **INFR-03**: Idempotency key support on booking creation
+- [x] **INFR-04**: Swagger/OpenAPI documentation at /api-docs
+- [x] **INFR-05**: Request validation with Zod schemas
+- [x] **INFR-06**: Health check endpoint
 
 ### Admin & Seed
 
-- [ ] **ADMN-01**: Seed data with sample services, professionals, and working hours for beauty salon
-- [ ] **ADMN-02**: Admin user authentication (JWT)
+- [x] **ADMN-01**: Seed data with sample services, professionals, and working hours for beauty salon
+- [x] **ADMN-02**: Admin user authentication (JWT)
 
-## v2 Requirements
+## v2.0 Requirements
 
-Deferred to next release.
+Requirements for v2.0 Frontend release. Each maps to roadmap phases (continuing from phase 5+).
 
-### UX & Frontend
-- **FRONT-01**: Frontend admin UI (calendar view, booking management)
-- **FRONT-02**: Receptionist simplified interface
+### Foundation & Auth
+
+- [ ] **FAUTH-01**: Login page with email/password form, JWT token storage, and auto-redirect on session expiry
+- [ ] **FAUTH-02**: AdminUser model gains `role` field (ADMIN, RECEPTIONIST) via Prisma migration; JWT payload includes role
+- [ ] **FAUTH-03**: Role-based frontend routing — admin sees full dashboard, receptionist sees simplified interface
+- [ ] **FAUTH-04**: Admin can create, edit, and deactivate admin/receptionist user accounts
+- [ ] **FAUTH-05**: CORS middleware configured on backend for frontend origin
+
+### Services & Professionals Management
+
+- [ ] **FMGMT-01**: Admin can view services in a table with name, duration, price, and active status
+- [ ] **FMGMT-02**: Admin can create, edit, and deactivate services via modal/form
+- [ ] **FMGMT-03**: Admin can view professionals in a table with name, contact info, active status, and assigned services
+- [ ] **FMGMT-04**: Admin can create, edit, and deactivate professionals via modal/form
+- [ ] **FMGMT-05**: Admin can assign/remove services to/from a professional using multi-select
+- [ ] **FMGMT-06**: Admin can configure working hours per professional via visual weekly grid (Mon-Sun with start/end times)
+
+### Calendar & Booking (Admin)
+
+- [ ] **FCAL-01**: Admin sees a calendar view (day and week modes) with bookings rendered as time blocks in per-professional columns
+- [ ] **FCAL-02**: Booking blocks are color-coded by status (PRE_RESERVED=yellow, CONFIRMED=blue, COMPLETED=green, CANCELLED=gray, NO_SHOW=red)
+- [ ] **FCAL-03**: Admin can create a booking via multi-step flow: search/create client → pick service → pick professional → pick available slot → confirm
+- [ ] **FCAL-04**: Admin can transition booking status: confirm, cancel, mark as completed, mark as no-show
+- [ ] **FCAL-05**: Dashboard shows KPI cards: bookings today, revenue today, no-show count, occupancy percentage
+
+### Client Management
+
+- [ ] **FCLNT-01**: Admin can search clients by phone and view results
+- [ ] **FCLNT-02**: Admin can register new clients (name, phone, email)
+- [ ] **FCLNT-03**: Admin can view a client's appointment history
+
+### Receptionist Interface
+
+- [ ] **FRCPT-01**: Receptionist sees today's agenda as a timeline grouped by professional
+- [ ] **FRCPT-02**: Receptionist can create bookings via quick 3-step flow: phone lookup → service + slot → confirm
+- [ ] **FRCPT-03**: Receptionist can search clients by phone and see name + last visit
+- [ ] **FRCPT-04**: Receptionist can check slot availability for a service/date
+
+### Frontend Infrastructure
+
+- [ ] **FINF-01**: React 19 + Vite frontend project scaffolded with router, API client, and auth context
+- [ ] **FINF-02**: Express backend serves Vite production build as static files (single PM2 process)
+- [ ] **FINF-03**: Backend gains necessary new endpoints: GET /api/clients (list), PATCH /api/bookings/:id/status, GET /api/admin/dashboard/stats
+
+## v2.1 Requirements
+
+Deferred to next release. Tracked but not in current roadmap.
+
+### UX Enhancements
+
+- **UXE-01**: Drag-and-drop booking reschedule on calendar
+- **UXE-02**: Professional utilization analytics view
+- **UXE-03**: Responsive tablet layout for receptionist interface
+- **UXE-04**: Print daily agenda (CSS print stylesheet)
+- **UXE-05**: Bulk working hours template
+- **UXE-06**: Booking notes field
+- **UXE-07**: Payment status badge on booking cards
+- **UXE-08**: Quick client history popup
 
 ### Advanced Scheduling
+
 - **ASCH-01**: Booking rescheduling (atomic cancel + rebook)
 - **ASCH-02**: Multi-service booking in single session
 - **ASCH-03**: Recurring appointment booking
 - **ASCH-04**: Waitlist for fully booked slots
-- **ASCH-05**: Buffer time configuration per professional/service
 
 ### Integrations
+
 - **INTG-01**: Webhook events on booking state changes
 - **INTG-02**: Google Calendar sync
 - **INTG-03**: Real PIX payment gateway integration
-- **INTG-04**: Redis for TTL-based pre-reservation (performance)
-
-### Observability
-- **OBSV-01**: Booking conversion funnel (AI session → booking)
-- **OBSV-02**: No-show rate tracking
-- **OBSV-03**: Revenue projection dashboard
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| CRM features (notes, tags, contact timeline) | Not a CRM — booking history IS the relationship |
-| Staff payroll / commission | HR domain, not scheduling |
-| Marketing campaigns | Separate product |
-| Dynamic pricing / surge pricing | Confuses AI conversations |
-| Multi-tenant / SaaS billing | Single tenant for OrchestratorAI |
+| Online client self-booking portal | AI agent (OrchestratorAI) IS the self-booking interface |
+| SMS/WhatsApp notifications | OrchestratorAI handles client communication |
+| Loyalty/rewards program | Scope creep — visit count derivable from history |
+| Inventory/product management | Different product domain |
+| Financial reports/accounting | Payment is simulated PIX only |
+| Multi-location support | Single-tenant deployment |
+| Staff payroll/commission | HR/payroll is separate domain |
+| Recurring appointments | Complex state machine — book manually each visit |
+| Real-time WebSocket updates | 2 concurrent users don't justify complexity — use polling |
 | Mobile app | Web only |
-| Real-time WebSocket streaming | REST polling sufficient |
-| Built-in NLU | OrchestratorAI handles NLU |
-| Public booking widget | AI agent IS the booking channel |
+| Dynamic/surge pricing | Confuses AI conversations |
 
 ## Traceability
 
@@ -128,12 +180,39 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFR-06 | Phase 1 | Complete |
 | ADMN-01 | Phase 1 | Complete |
 | ADMN-02 | Phase 1 | Complete |
+| FAUTH-01 | — | Pending |
+| FAUTH-02 | — | Pending |
+| FAUTH-03 | — | Pending |
+| FAUTH-04 | — | Pending |
+| FAUTH-05 | — | Pending |
+| FMGMT-01 | — | Pending |
+| FMGMT-02 | — | Pending |
+| FMGMT-03 | — | Pending |
+| FMGMT-04 | — | Pending |
+| FMGMT-05 | — | Pending |
+| FMGMT-06 | — | Pending |
+| FCAL-01 | — | Pending |
+| FCAL-02 | — | Pending |
+| FCAL-03 | — | Pending |
+| FCAL-04 | — | Pending |
+| FCAL-05 | — | Pending |
+| FCLNT-01 | — | Pending |
+| FCLNT-02 | — | Pending |
+| FCLNT-03 | — | Pending |
+| FRCPT-01 | — | Pending |
+| FRCPT-02 | — | Pending |
+| FRCPT-03 | — | Pending |
+| FRCPT-04 | — | Pending |
+| FINF-01 | — | Pending |
+| FINF-02 | — | Pending |
+| FINF-03 | — | Pending |
 
 **Coverage:**
-- v1 requirements: 28 total
-- Mapped to phases: 28/28
-- Unmapped: 0
+- v1.0 requirements: 28 total (all Complete)
+- v2.0 requirements: 26 total
+- Mapped to phases: 0/26
+- Unmapped: 26
 
 ---
 *Requirements defined: 2026-03-13*
-*Traceability updated: 2026-03-13*
+*v2.0 requirements added: 2026-03-14*
