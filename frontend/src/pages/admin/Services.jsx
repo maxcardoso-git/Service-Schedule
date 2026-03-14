@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -164,7 +164,7 @@ function EditServiceDialog({ service, open, onOpenChange }) {
   const [error, setError] = useState('');
 
   // Sync form when service changes
-  useState(() => {
+  useEffect(() => {
     if (service) {
       setForm({
         name: service.name,
@@ -172,7 +172,7 @@ function EditServiceDialog({ service, open, onOpenChange }) {
         price: service.price,
       });
     }
-  });
+  }, [service]);
 
   const mutation = useMutation({
     mutationFn: (data) =>
@@ -316,8 +316,24 @@ export default function Services() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id) => apiFetch('/admin/services/' + id, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['services'] });
+      toast.success('Service deleted');
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Failed to delete service');
+    },
+  });
+
   function handleToggleActive(service) {
     toggleActiveMutation.mutate({ id: service.id, active: !service.active });
+  }
+
+  function handleDelete(service) {
+    if (!confirm(`Delete "${service.name}"? This cannot be undone.`)) return;
+    deleteMutation.mutate(service.id);
   }
 
   return (
@@ -394,6 +410,19 @@ export default function Services() {
                         <Pencil className="h-4 w-4" />
                         <span className="sr-only">Edit {service.name}</span>
                       </Button>
+                      {!service.active && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleDelete(service)}
+                          disabled={deleteMutation.isPending}
+                          title="Delete service"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete {service.name}</span>
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

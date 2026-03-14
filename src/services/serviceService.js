@@ -130,3 +130,34 @@ export async function deactivateService(id) {
 
   return prisma.service.update({ where: { id }, data: { active: false } });
 }
+
+/**
+ * Delete an inactive service.
+ * Only services that are inactive and have no bookings can be deleted.
+ * @param {string} id - UUID of the service.
+ * @throws {NotFoundError} If no service with that ID exists.
+ * @throws {Error} If service is still active or has bookings.
+ */
+export async function deleteService(id) {
+  const existing = await prisma.service.findUnique({
+    where: { id },
+    include: { _count: { select: { bookings: true } } },
+  });
+  if (!existing) {
+    throw new NotFoundError('Service not found', 'SERVICE_NOT_FOUND');
+  }
+  if (existing.active) {
+    const err = new Error('Only inactive services can be deleted');
+    err.statusCode = 400;
+    throw err;
+  }
+  if (existing._count.bookings > 0) {
+    const err = new Error('Cannot delete service with existing bookings');
+    err.statusCode = 409;
+    throw err;
+  }
+
+  // Remove professional assignments first, then the service
+  await prisma.professionalService.deleteMany({ where: { serviceId: id } });
+  return prisma.service.delete({ where: { id } });
+}

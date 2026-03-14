@@ -8,6 +8,7 @@ import {
   createService,
   updateService,
   deactivateService,
+  deleteService,
 } from '../../services/serviceService.js';
 
 const router = Router();
@@ -84,6 +85,22 @@ router.patch(
   asyncHandler(async (req, res) => {
     const service = await deactivateService(req.params.id);
     res.json({ data: service });
+  })
+);
+
+/**
+ * DELETE /api/admin/services/:id
+ * Delete an inactive service with no bookings.
+ * Returns 200 { data: { deleted: true } } or error.
+ */
+router.delete(
+  '/:id',
+  validate({
+    params: z.object({ id: z.string().uuid() }),
+  }),
+  asyncHandler(async (req, res) => {
+    await deleteService(req.params.id);
+    res.json({ data: { deleted: true } });
   })
 );
 
