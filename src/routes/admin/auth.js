@@ -38,7 +38,7 @@ router.post('/login', validate(loginSchema), async (req, res, next) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: 'admin' },
+      { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
@@ -49,6 +49,7 @@ router.post('/login', validate(loginSchema), async (req, res, next) => {
         id: user.id,
         name: user.name,
         email: user.email,
+        role: user.role,
       },
     });
   } catch (err) {
