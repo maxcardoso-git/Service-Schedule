@@ -259,6 +259,16 @@ function EditProfessionalDialog({ professional, open, onOpenChange }) {
 
 function ServiceAssignmentDialog({ professional, open, onOpenChange }) {
   const queryClient = useQueryClient();
+  const [localAssigned, setLocalAssigned] = useState(new Set());
+
+  // Sync local state when professional prop changes or dialog opens
+  useEffect(() => {
+    if (professional) {
+      setLocalAssigned(new Set(
+        (professional.services ?? []).map((ps) => ps.service.id)
+      ));
+    }
+  }, [professional]);
 
   const {
     data: servicesData,
@@ -271,17 +281,14 @@ function ServiceAssignmentDialog({ professional, open, onOpenChange }) {
     retry: 1,
   });
 
-  const assignedServiceIds = new Set(
-    (professional?.services ?? []).map((ps) => ps.service.id)
-  );
-
   const assignMutation = useMutation({
     mutationFn: ({ serviceId }) =>
       apiFetch('/admin/professionals/' + professional.id + '/services', {
         method: 'POST',
         body: { serviceId },
       }),
-    onSuccess: () => {
+    onSuccess: (_data, { serviceId }) => {
+      setLocalAssigned((prev) => new Set([...prev, serviceId]));
       queryClient.invalidateQueries({ queryKey: ['professionals'] });
       toast.success('Service assigned');
     },
@@ -295,7 +302,12 @@ function ServiceAssignmentDialog({ professional, open, onOpenChange }) {
       apiFetch('/admin/professionals/' + professional.id + '/services/' + serviceId, {
         method: 'DELETE',
       }),
-    onSuccess: () => {
+    onSuccess: (_data, { serviceId }) => {
+      setLocalAssigned((prev) => {
+        const next = new Set(prev);
+        next.delete(serviceId);
+        return next;
+      });
       queryClient.invalidateQueries({ queryKey: ['professionals'] });
       toast.success('Service removed');
     },
@@ -342,7 +354,7 @@ function ServiceAssignmentDialog({ professional, open, onOpenChange }) {
           {!servicesLoading && !servicesError && allServices.length > 0 && (
             <div className="flex flex-col gap-3">
               {allServices.map((service) => {
-                const assigned = assignedServiceIds.has(service.id);
+                const assigned = localAssigned.has(service.id);
                 return (
                   <div key={service.id} className="flex items-center justify-between gap-3">
                     <div className="flex flex-col">
