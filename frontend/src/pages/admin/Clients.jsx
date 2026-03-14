@@ -264,7 +264,7 @@ export default function Clients() {
       apiFetch('/admin/clients?search=' + encodeURIComponent(searchTerm) + '&limit=50'),
   });
 
-  const clients = data?.data ?? [];
+  const clients = data?.data?.clients ?? data?.data ?? [];
 
   // Phone lookup: searchTerm is digits-only and at least 8 chars
   const isPhoneLookup = /^\d{8,}$/.test(searchTerm);
