@@ -4,7 +4,16 @@ import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    {
+      name: 'remove-crossorigin',
+      transformIndexHtml(html) {
+        return html.replace(/ crossorigin/g, '');
+      },
+    },
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -21,5 +30,6 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    modulePreload: { polyfill: false },
   },
 });
