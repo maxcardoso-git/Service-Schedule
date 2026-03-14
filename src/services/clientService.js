@@ -51,6 +51,36 @@ export async function createClient({ name, phone, email }) {
 }
 
 /**
+ * List clients with optional search and pagination.
+ * @param {{ search?: string, page?: number, limit?: number }} params
+ * @returns {Promise<{ clients: Array, total: number, page: number, limit: number }>}
+ */
+export async function listClients({ search, page = 1, limit = 20 } = {}) {
+  const where = search
+    ? {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { phone: { contains: search, mode: 'insensitive' } },
+        ],
+      }
+    : {};
+
+  const skip = (page - 1) * limit;
+
+  const [clients, total] = await Promise.all([
+    prisma.client.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { name: 'asc' },
+    }),
+    prisma.client.count({ where }),
+  ]);
+
+  return { clients, total, page, limit };
+}
+
+/**
  * Get all bookings for a client, ordered by start time descending.
  * @param {string} clientId - UUID of the client.
  * @returns {Promise<Array>} Array of booking records (may be empty).

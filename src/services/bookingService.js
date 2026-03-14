@@ -329,7 +329,36 @@ export async function cancelBooking(bookingId) {
 }
 
 // ---------------------------------------------------------------------------
-// 5. getBookingsByPhone
+// 5. updateBookingStatus
+// ---------------------------------------------------------------------------
+
+/**
+ * Update the status of a booking (admin action).
+ *
+ * @param {string} id - UUID of the booking.
+ * @param {string} status - Target status (CONFIRMED, COMPLETED, CANCELLED, NO_SHOW).
+ * @returns {Promise<object>} Updated booking with client and service relations.
+ * @throws {NotFoundError} If booking does not exist.
+ */
+export async function updateBookingStatus(id, status) {
+  const existing = await prisma.booking.findUnique({ where: { id } });
+
+  if (!existing) {
+    throw new NotFoundError('Booking not found', 'BOOKING_NOT_FOUND');
+  }
+
+  return prisma.booking.update({
+    where: { id },
+    data: { status },
+    include: {
+      client: true,
+      services: { include: { service: true } },
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 6. getBookingsByPhone
 // ---------------------------------------------------------------------------
 
 /**

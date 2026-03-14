@@ -10,6 +10,10 @@ import clientRouter from './routes/clients.js';
 import servicesRouter from './routes/services.js';
 import adminServicesRouter from './routes/admin/services.js';
 import adminProfessionalsRouter from './routes/admin/professionals.js';
+import adminUsersRouter from './routes/admin/users.js';
+import adminClientsRouter from './routes/admin/clients.js';
+import adminBookingsRouter from './routes/admin/bookings.js';
+import adminDashboardRouter from './routes/admin/dashboard.js';
 import bookingsRouter from './routes/bookings.js';
 import paymentsRouter from './routes/payments.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -58,6 +62,18 @@ app.use('/api/admin/services', adminServicesRouter);
 
 // Admin professionals — SRVC-03, SRVC-04 (profiles, assignments, working hours)
 app.use('/api/admin/professionals', adminProfessionalsRouter);
+
+// Admin user management — requires ADMIN role
+app.use('/api/admin/users', adminUsersRouter);
+
+// Admin client listing
+app.use('/api/admin/clients', adminClientsRouter);
+
+// Admin booking status updates
+app.use('/api/admin/bookings', adminBookingsRouter);
+
+// Admin dashboard stats
+app.use('/api/admin/dashboard', adminDashboardRouter);
 
 // Booking scheduling — SCHD-01 through SCHD-08
 app.use('/api/bookings', bookingsRouter);
