@@ -1,226 +1,182 @@
-# Features Research — AI Scheduling Platform
+# Feature Landscape: Scheduling Admin & Receptionist Interfaces (v2.0)
+
+**Domain:** Beauty salon scheduling platform — admin dashboard + receptionist interface
+**Researched:** 2026-03-13
+**Overall confidence:** MEDIUM-HIGH
+**Context:** Backend API fully shipped (v1.0). This research covers the frontend layer only.
+
+---
 
 ## Table Stakes
 
-Features users expect. Missing = product feels incomplete or unusable.
+Features users expect. Missing any of these = product feels incomplete or unprofessional.
 
-### Identity & Clients Domain
+### Admin Interface
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Client registration (name, phone, email) | Every booking system tracks who made the booking | Low | Phone is primary key for WhatsApp-based AI flows |
-| Client lookup by phone or email | AI agent needs to identify returning clients | Low | Must be fast; called on every conversation start |
-| Client profile (basic contact info) | Receptionists expect this; AI needs it to personalize | Low | Keep minimal — this is not a CRM |
-| Duplicate client detection | Phone-based lookup must handle duplicates | Medium | Fuzzy match on phone number variations |
-| Preference / history access | "Last service" shown in AI greeting | Medium | Derived from booking history, not a separate field |
+| Feature | Why Expected | Complexity | Backend Support | Notes |
+|---------|--------------|------------|-----------------|-------|
+| **Calendar view (day + week)** | Core mental model for scheduling — admins think in calendar, not lists | High | `GET /api/bookings` returns bookings with startTime/endTime | Most complex UI component. Day and week views are essential; month view is secondary. Need to render bookings as blocks on a time grid, per-professional columns. |
+| **Booking list with filters** | Need to find/manage bookings by status, date range, professional, client | Medium | `GET /api/bookings` supports query params | Filters: status (PRE_RESERVED, CONFIRMED, CANCELLED, COMPLETED, NO_SHOW), date range, professional, client. Complement to calendar view. |
+| **Create booking manually** | Walk-ins, phone bookings | Medium | `POST /api/bookings`, `PATCH /:id/confirm` | Flow: select client (search or create) -> pick service -> pick professional -> pick slot -> confirm. Multi-step form or wizard. |
+| **Cancel booking** | Cancellations happen daily | Low | `PATCH /api/bookings/:id/cancel` exists | Confirmation dialog, update calendar in real-time. |
+| **Services CRUD** | Admin must manage what salon offers | Medium | `POST/PUT/PATCH /api/admin/services` exist | Table view with inline edit or modal. Fields: name, duration, price, active toggle, professional assignment. |
+| **Professionals CRUD** | Manage staff roster | Medium | Full CRUD at `/api/admin/professionals` | Table view. Fields: name, contact info, active toggle, assigned services. |
+| **Professional-service assignment** | Control who does what | Low | `POST/DELETE /api/admin/professionals/:id/services` | Multi-select chips UI on professional edit form. |
+| **Working hours management** | Define when each professional is available | Medium | `PUT /api/admin/professionals/:id/working-hours` | Visual weekly grid (Mon-Sun) with start/end time per day. This is where admins spend significant time. |
+| **Client list with search** | Look up clients, view history | Low-Medium | `GET /api/clients/by-phone/:phone`, `GET /api/clients/:id/appointments` | Search by phone (primary). Paginated list. Click to see appointment history. **Gap: no `GET /api/clients` list endpoint exists.** |
+| **Client registration** | Add walk-in clients | Low | `POST /api/clients` exists | Simple form: name (required), phone (required), email (optional). |
+| **Login page + session management** | Security baseline | Medium | `POST /api/admin/auth/login` returns JWT | Login form, JWT storage, auto-redirect on expiry, logout. |
+| **Role-based access control** | Admin vs receptionist see different things | Medium | **Gap: AdminUser has no `role` field** | Need schema migration to add role. Frontend route guards + conditional nav. |
+| **Booking status transitions** | Mark as completed, no-show at end of day | Low-Medium | **Gap: no generic status transition endpoint** | Need `PATCH /api/bookings/:id/status` or extend confirm/cancel pattern. States: CONFIRMED->COMPLETED, CONFIRMED->NO_SHOW. |
 
-### Services Catalog Domain
+### Receptionist Interface
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Service listing (name, description, duration, price) | AI agent must be able to describe and quote services | Low | Core catalog; no catalog = no booking |
-| Service-to-professional assignment | Not every professional does every service | Low | Many-to-many join table |
-| Service duration as first-class field | Slot availability depends on it | Low | Must support variable durations (30, 60, 90 min) |
-| Service active/inactive toggle | Catalog changes without deleting history | Low | Soft-delete pattern |
-| Price display | AI must quote price during conversation | Low | Single price per service is acceptable for MVP |
-
-### Scheduling Engine Domain
-
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Available slot query (by date, service, professional) | Core scheduling action; everything depends on this | High | Must return slots fast; AI blocks conversation waiting |
-| Booking creation | The actual appointment | Low | Creates a record linking client + service + professional + slot |
-| Booking confirmation (immediate) | AI must tell client "you're booked" | Low | Synchronous response required |
-| Booking lookup by client | AI needs to show "your upcoming appointment" | Low | Query by client ID or phone |
-| Booking cancellation | Clients cancel; AI must support this | Medium | Frees the slot back to availability |
-| Booking rescheduling | Common client need; AI must handle gracefully | Medium | Cancel + rebook in one transaction |
-| Professional availability configuration | Who works on which days/hours | Medium | Weekly recurring schedule is standard |
-| Conflict detection | Cannot double-book a professional's slot | Medium | Must be atomic (race condition safe) |
-| Buffer time between appointments | Cleanup time after service; affects slot calculation | Medium | Per-service or per-professional setting |
-
-### Payment Engine Domain
-
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Payment record creation at booking | Track what's owed | Low | Even without charging upfront, record exists |
-| Payment status tracking (pending, paid, cancelled) | Receptionists need to know who paid | Low | Simple enum field |
-| Price at booking time (snapshot) | Prices change; historical bookings must retain original price | Low | Do NOT read live price from catalog at payment time |
-| Payment method recording | Cash, card, PIX — salon owner needs this | Low | Free text or enum |
-
-### Conversation Tracking Domain
-
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Session-to-booking linkage | Know which AI conversation produced which booking | Low | Foreign key: booking_id on conversation session |
-| Booking confirmation data for AI | AI needs structured data to compose confirmation message | Low | Return booking object with all relevant fields |
-| Error responses AI can act on | If slot unavailable, AI must understand why | Medium | Structured error codes, not just HTTP 4xx |
-
-### Cross-cutting / API Design
-
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| RESTful JSON API | AI agents call HTTP endpoints | Low | Standard expectation for any API |
-| Authentication (API key or JWT) | Secure access to booking data | Low | Per-agent or per-salon credential |
-| Consistent error envelope | AI must parse failures to give user feedback | Low | `{error: {code, message}}` pattern |
-| Idempotent booking creation | AI may retry on timeout; must not double-book | Medium | Idempotency key on POST /bookings |
-| Fast response times (<500ms for availability) | AI conversation stalls while waiting | Medium | Availability is on the hot path |
-| Pagination for list endpoints | Service lists, booking history | Low | Standard cursor or offset |
+| Feature | Why Expected | Complexity | Backend Support | Notes |
+|---------|--------------|------------|-----------------|-------|
+| **Today's agenda view** | Receptionist needs at-a-glance daily schedule | Medium | `GET /api/bookings` filtered by date | Timeline showing all bookings for today, grouped or split by professional. Simpler than full calendar — single day, focused layout. |
+| **Quick booking flow** | Speed is key for phone/walk-in bookings | Medium | `POST /api/bookings` + `PATCH /:id/confirm` | Streamlined 3-step flow: (1) client phone lookup, (2) service + slot picker, (3) confirm. Fewer clicks than admin. |
+| **Client search by phone** | Phone is the primary identifier at front desk | Low | `GET /api/clients/by-phone/:phone` exists | Phone input with mask, auto-search on complete number. Show client name + last visit date. |
+| **Slot availability check** | "When can I come in?" is the #1 question | Low | `POST /api/bookings/availability` exists | Show available times for selected service. Professional optional. |
+| **Arrival check-in indicator** | Know which clients have arrived | Low | Status field on booking | Visual marker (e.g., highlight row) when client checks in. Simple toggle. |
 
 ---
 
 ## Differentiators
 
-Features that set this platform apart for AI agent consumption. Not expected by default, but high value when present.
+Features that improve the experience noticeably. Not expected, but valued.
 
-### AI Agent Ergonomics
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Availability as "next N slots" query | AI can offer "tomorrow at 2pm or 4pm" without iterating dates | Medium | `GET /availability?service=X&limit=5` returning next available windows |
-| Natural-language-friendly slot formats | Return slots with display labels ("Tomorrow at 2pm") not just ISO timestamps | Low | AI can pass through without date formatting logic |
-| Atomic rebook (cancel + create in one call) | Reduces AI conversation turns; prevents partial failures | Medium | Transactional: if new slot unavailable, old slot preserved |
-| Conflict explanation in availability response | "Professional unavailable" vs "Slot taken" helps AI phrase response | Low | Add `reason` field to unavailable slots |
-| Booking intent / hold pattern | Reserve slot for 5 minutes while AI completes conversation, then confirm | High | Reduces "slot stolen between check and confirm" race |
-| Bulk availability (multiple professionals) | "Any professional available at 3pm?" one-call answer | Medium | `GET /availability?service=X&any_professional=true` |
-| Client auto-create on first booking | AI does not need separate client-creation step | Low | Upsert on phone number during booking creation |
-
-### Salon Operations
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Professional-specific booking URL | Receptionists can share direct links | Low | Nice-to-have, not core for AI consumption |
-| Waitlist for fully booked slots | Capture demand when salon is full | High | Complex state machine; defer post-MVP |
-| Recurring appointment booking | Loyal clients book monthly slot series | High | Complex scheduling; defer post-MVP |
-| Multi-service booking in one session | Hair + nails in one appointment | High | Requires sequential slot calculation; defer post-MVP |
-| Service package / bundle | "Buy 5 sessions, get 1 free" | Very High | Pricing complexity; out of scope |
-
-### Reporting & Observability
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Booking conversion funnel (AI session → booking) | Shows AI effectiveness | Medium | Requires conversation_tracking linkage |
-| No-show rate tracking | Operational insight | Low | Add no_show boolean to booking |
-| Revenue projection (upcoming bookings × price) | Manager dashboard value | Low | Simple aggregation query |
-| AI agent activity log | Debug why AI made certain booking decisions | Medium | Structured log per conversation turn |
-
-### Integrations
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Webhook on booking events | Push notification to external systems | Medium | Standard for modern APIs; enables OrchestratorAI callbacks |
-| WhatsApp message with confirmation details | Deliver confirmation through conversation channel | High | Requires WhatsApp Business API; out of scope for this platform |
-| Google Calendar sync | Professional sees appointments in personal calendar | High | OAuth complexity; defer post-MVP |
-| PIX payment generation (Brazil context) | Generate QR code / copy-paste PIX at booking | High | Payment gateway integration; separate concern |
+| Feature | Value Proposition | Complexity | Backend Support | Notes |
+|---------|-------------------|------------|-----------------|-------|
+| **Dashboard KPI cards** | Revenue today, booking count, no-show rate, occupancy % | Medium | **Gap: needs aggregation endpoint** `GET /api/admin/dashboard/stats` | Admin-only. 4-5 metric cards at top of dashboard. Very high perceived value, moderate backend work. |
+| **Color-coded booking statuses on calendar** | Instant visual status recognition | Low | Status enum exists in BookingStatus | PRE_RESERVED=yellow, CONFIRMED=blue, COMPLETED=green, CANCELLED=gray, NO_SHOW=red. Pure frontend. |
+| **Drag-and-drop reschedule on calendar** | Intuitive rescheduling without forms | High | **Gap: needs reschedule endpoint** `PUT /api/bookings/:id` | Calendar libraries (FullCalendar, etc.) support this natively. High UX impact. Requires new API endpoint. |
+| **Quick client history popup** | See last 5 visits without navigating away | Low | `GET /api/clients/:id/appointments` exists | Popover/tooltip on client name. No page change. Fast context. |
+| **Professional utilization view** | See how busy each professional is today/week | Medium | Derived from bookings + working hours | Percentage bar per professional. Helps admin balance load. |
+| **Booking notes** | Internal notes per appointment (preferences, special requests) | Low | `notes` field exists on Booking model | Simple textarea on booking form. Already supported in schema. |
+| **Bulk working hours template** | "Apply Monday schedule to all weekdays" | Low | Extend existing working hours PUT | Common UX pattern. Saves significant admin setup time. |
+| **Payment status badge on bookings** | See if booking is paid at a glance | Low | Payment model linked to Booking (1:1) | Small badge/icon on booking card/row. PIX status: PENDING/PAID/CANCELLED. |
+| **Print daily agenda** | Paper backup for front desk | Low | Pure client-side (CSS print) | Still common in Brazilian salons. Simple print stylesheet for today's view. |
+| **Responsive layout (tablet)** | Receptionist often uses tablet at front desk | Medium | N/A (frontend only) | Not full mobile — tablet landscape is the priority form factor for receptionists. |
 
 ---
 
 ## Anti-Features
 
-Features to explicitly NOT build. Common mistakes in this domain.
+Features to explicitly NOT build in v2.0. Common in salon software but wrong for this project/stage.
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Full CRM (notes, tags, full contact timeline) | Scope creep; you are not a CRM | Store minimal client data; booking history IS the relationship |
-| Inventory management (products, retail) | Not a scheduling concern | Separate service if ever needed |
-| Staff payroll / commission calculation | HR domain, not scheduling | Use booking data as input to external payroll tool |
-| Marketing email / SMS campaigns | Different product entirely | Webhook events let external tools trigger campaigns |
-| Public booking widget (embeddable) | Complex frontend; not the primary channel | AI agent IS the booking channel; receptionist UI is secondary |
-| Built-in video conferencing | Beauty salons are in-person | Do not add virtual appointment types |
-| Dynamic pricing / surge pricing | Adds UX complexity; confuses AI conversations | Keep single price per service |
-| Loyalty points / rewards engine | Complex; distracts from scheduling core | Use booking count as input; points are a separate system |
-| Multi-tenant SaaS platform billing | Not in scope (single-tenant for OrchestratorAI) | If multi-tenant ever needed, treat as separate milestone |
-| Real-time availability streaming (WebSocket) | AI polling model works fine; adds infrastructure complexity | Polling availability endpoint on each conversation turn is acceptable |
-| AI natural language understanding inside the platform | OrchestratorAI already handles NLU | Platform receives structured API calls, not freeform text |
+| **Online client self-booking portal** | The AI agent (via OrchestratorAI) IS the self-booking interface. A separate portal duplicates the booking channel and creates sync issues. | All client-facing booking goes through OrchestratorAI AI agents. Admin/receptionist interfaces are staff-only. |
+| **SMS/WhatsApp notification system** | Infrastructure complexity (SMS gateways, WhatsApp Business API), per-message cost, and OrchestratorAI already handles client communication. | Defer entirely. OrchestratorAI agents communicate with clients through existing channels. |
+| **Loyalty/rewards program** | Scope creep. Adds models, complex UI, business rules with unclear ROI at this stage. | Visit count is derivable from appointment history. Build loyalty in v3+ if validated. |
+| **Inventory/product management** | This is a scheduling system, not a retail POS. Product inventory is a different product domain. | Out of scope entirely. Use separate retail system if salon sells products. |
+| **Financial reports / accounting** | Complex domain (taxes, expenses, profit margins). Payment is simulated PIX only. | Show simple revenue summary derived from bookings. No expense tracking, no tax calculations. |
+| **Multi-location support** | Single salon deployment. Multi-location adds tenant isolation throughout every query and every UI. | Keep single-tenant. Architecture allows adding later but do not build now. |
+| **Staff payroll / commission** | HR/payroll is a separate domain with legal/tax implications. | Show service counts per professional for manual payroll calculation. |
+| **Automated marketing** | Email campaigns, birthday messages, re-engagement — separate product category entirely. | Not in scope. |
+| **Complex recurring appointments** | Weekly standing appointments with exception handling is deceptively complex (holidays, conflicts, cancellation of one instance vs series). | Support single bookings only. Receptionist manually books recurring clients each visit. |
+| **Waitlist management** | Adds a full state machine (waitlist -> offered -> accepted/declined -> booked) with timeout logic. | v3+ consideration. Receptionist manually calls next client when slot opens. |
+| **Real-time WebSocket updates** | Adds infrastructure layer (WebSocket server, connection management, reconnection logic). Two concurrent users (admin + receptionist) do not justify the complexity. | Use polling or manual refresh. If needed later, add as incremental upgrade. |
+| **Dynamic/surge pricing** | Adds UX complexity, confuses AI conversations, requires complex pricing rules engine. | Single price per service. Period. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-Identity & Clients
-  └── Client lookup (phone) ─────────────────────────────────────────────┐
-  └── Client auto-create                                                  │
-                                                                          │
-Services Catalog                                                          │
-  └── Service listing                                                     │
-  └── Service-to-professional assignment ──────────────────────────────┐  │
-  └── Service duration                                                  │  │
-                                                                        │  │
-Scheduling Engine                                                        │  │
-  └── Professional availability config ←──────────────────────────────┘  │
-  └── Available slot query ←── (service duration + professional avail)    │
-  └── Conflict detection (atomic) ←── (slot query)                       │
-  └── Booking creation ←── (slot + service + professional + client) ←──┘
-  └── Booking confirmation response                                       │
-  └── Booking lookup by client                                            │
-  └── Booking cancellation ←── (booking creation)                        │
-  └── Booking rescheduling ←── (cancellation + creation)                 │
-                                                                          │
-Payment Engine                                                            │
-  └── Payment record ←── (booking creation, price snapshot)              │
-  └── Payment status update ←── (payment record)                         │
-                                                                          │
-Conversation Tracking                                                     │
-  └── Session-to-booking linkage ←── (booking creation)                  │
-  └── Confirmation data for AI ←── (booking creation response)
+Auth + Roles (AdminUser.role) ──────────────────────────┐
+                                                         v
+                                            ┌─── Role-Based Routing ───┐
+                                            v                           v
+                                       Admin Shell                 Receptionist Shell
+                                            |                           |
+                    ┌───────────────────────┼──────────┐               |
+                    v                       v          v               v
+             Services CRUD          Professionals   Calendar      Today's Agenda
+                    |                CRUD + Hours    View (d/w)     (single day)
+                    |                       |          |               |
+                    v                       v          v               v
+             Service-Professional    Working Hours   Booking       Quick Booking
+             Assignment              Weekly Grid    Management     Flow
+                                                       |               |
+                                                       v               v
+                                                  Client Search ◄──────┘
+                                                  + Registration
+                                                       |
+                                                       v
+                                                  Client History
+                                                  + Booking Details
 ```
 
-**Critical path:** Client lookup → Slot query → Conflict detection → Booking creation → Confirmation response
+**Key dependency chains:**
 
-This 5-step path is the entire reason the platform exists. Everything else serves or enriches this path.
+1. **Auth + Role must come first** — everything requires login, role determines which shell loads
+2. **Services + Professionals before Calendar** — calendar booking forms need service/professional data for dropdowns
+3. **Calendar is the admin centerpiece** — most admin time is spent here
+4. **Today's Agenda is the receptionist centerpiece** — simplified calendar derivative
+5. **Client search is shared** — used by both admin and receptionist during booking creation
+6. **Working hours before slot availability** — slots are computed from working hours minus existing bookings
+
+---
+
+## Backend Gaps (New Endpoints/Schema Changes Required)
+
+| Gap | What's Needed | Priority | Blocks |
+|-----|---------------|----------|--------|
+| AdminUser role field | Add `role` enum (ADMIN, RECEPTIONIST) to AdminUser model + migration | **Critical** | All role-based routing |
+| Client list endpoint | `GET /api/clients` with pagination, search by name/phone | **High** | Admin client management page |
+| Client update endpoint | `PUT /api/clients/:id` | Medium | Client profile editing |
+| Generic status transition | `PATCH /api/bookings/:id/status` (body: `{status}`) or individual endpoints per transition | **High** | Marking completed / no-show |
+| Reschedule endpoint | `PUT /api/bookings/:id` (change startTime, endTime, professionalId) | Medium | Drag-drop reschedule, edit booking |
+| Dashboard aggregation | `GET /api/admin/dashboard/stats` (counts, revenue by period) | Medium | KPI dashboard cards |
+| Receptionist user creation | Admin CRUD for AdminUser (create receptionist accounts) | **High** | Receptionist can't use system without account |
 
 ---
 
 ## MVP Recommendation
 
-### Must-have for MVP (table stakes only)
+### Must Ship (Table Stakes) — ordered by dependency
 
-**Identity & Clients**
-1. Client registration + lookup by phone (upsert pattern)
-2. Basic profile (name, phone, email)
+1. **Auth + role system** — AdminUser.role migration, login page, JWT session, role-based routing
+2. **Admin user management** — create/edit receptionist accounts (admin only)
+3. **Services CRUD UI** — table view with create/edit/deactivate
+4. **Professionals CRUD + working hours** — table view, service assignment, weekly schedule grid
+5. **Calendar view (day + week)** — per-professional columns, booking blocks, status colors
+6. **Booking creation flow** — client search/create -> service -> professional -> slot -> confirm
+7. **Booking status management** — confirm, cancel, complete, no-show transitions
+8. **Client search + registration + history** — phone search, quick registration, appointment list
+9. **Receptionist today view** — simplified daily agenda grouped by professional
+10. **Receptionist quick booking** — streamlined 3-step flow optimized for speed
 
-**Services Catalog**
-3. Service listing with duration and price
-4. Service-to-professional assignment
+### Should Ship (High-value, Low-effort Differentiators)
 
-**Scheduling Engine**
-5. Professional availability configuration (weekly recurring)
-6. Available slot query (by date + service + professional)
-7. Atomic booking creation with conflict detection
-8. Booking confirmation response (structured)
-9. Booking lookup by client phone
-10. Booking cancellation
+11. **Color-coded booking statuses** — pure frontend, zero backend work
+12. **Booking notes field** — schema already supports it, just add textarea
+13. **Payment status badge** — data already linked, just display it
+14. **Quick client history popup** — endpoint exists, add popover UI
+15. **Dashboard KPI cards** — needs one aggregation endpoint, high perceived value
 
-**Payment Engine**
-11. Payment record with price snapshot at booking time
-12. Payment status field (pending/paid/cancelled)
+### Defer to Post-MVP
 
-**Conversation Tracking**
-13. Session-to-booking linkage on creation
+- Drag-and-drop rescheduling (needs new endpoint + complex interaction)
+- Professional utilization analytics (derived metrics, secondary value)
+- Responsive tablet layout (optimize later based on actual usage)
+- Print daily agenda (CSS only but low priority)
+- Bulk working hours template (convenience, not critical)
 
-**API Design**
-14. Idempotency on booking creation
-15. Structured error codes AI can act on
+---
 
-### Recommended differentiators for MVP (high value, low/medium complexity)
+## Sources
 
-16. Client auto-create on booking (eliminates two-step registration)
-17. "Next N available slots" query (reduces AI conversation turns significantly)
-18. Conflict explanation in error responses (AI phrases response better)
-
-### Defer to post-MVP
-
-| Feature | Reason to Defer |
-|---------|-----------------|
-| Booking intent/hold (slot reservation) | High complexity; solve by making booking fast enough |
-| Rescheduling (atomic cancel+rebook) | Can be done client-side as two calls initially |
-| Waitlist | Complex state machine; low immediate need |
-| Recurring appointments | Complex; not needed for AI conversation flow |
-| Multi-service single appointment | Requires sequential slot math; defer |
-| Webhook events | Useful but not blocking AI consumption |
-| Manager reporting/dashboard | Day-2 concern; booking data supports ad-hoc queries |
-| Google Calendar sync | OAuth complexity; not needed for launch |
-| No-show tracking | Operational; can be added to booking model later |
+- [10 Must-Have Features in Salon Software Management for 2026 - Zylu](https://zylu.co/10-must-have-features-salon-software-management-2026/)
+- [Top Salon Software Features for 2026 | Zylu](https://zylu.co/top-salon-software-features-2026/)
+- [Top 7 Features Every Salon Software Must Have in 2026](https://salon360app.com/business-management/7-features-every-salon-software-must-have-in-2026/)
+- [10 Must-Have Salon Software Features | Mangomint](https://www.mangomint.com/blog/salon-software-features/)
+- [9 Essential Online Booking System Features | Booknetic](https://www.booknetic.com/blog/essential-online-booking-system-features)
+- [9 Best Salon Software in 2026 | TheSalonBusiness](https://thesalonbusiness.com/best-salon-software/)
+- [Essential Features of Appointment Booking Software | Queueme](https://queueme.io/blog/Essential-Features-of-an-Appointment-Booking-Software.html)
+- [Zenoti Salon Management Software](https://www.zenoti.com/salon-management-software)
+- [9 Essential Beauty Salon Management Software Picks 2026](https://www.salonbookingsystem.com/salon-booking-system-blog/best-beauty-salon-management-software/)
 
 ---
 
@@ -228,11 +184,12 @@ This 5-step path is the entire reason the platform exists. Everything else serve
 
 | Area | Confidence | Basis |
 |------|------------|-------|
-| Table stakes identification | HIGH | Well-established scheduling software patterns; Calendly, Acuity, Square Appointments, Fresha all converge on these features |
-| AI agent ergonomics differentiators | MEDIUM | Based on API design principles and knowledge of AI agent patterns |
-| Beauty salon domain specifics | MEDIUM | General knowledge of salon operations |
-| Anti-features list | HIGH | Industry-wide pattern of scope creep in booking platforms |
-| MVP scoping | MEDIUM | Informed by project context (replacing mock TRANSFORM capabilities) |
+| Admin table stakes | HIGH | Universal across Zenoti, Fresha, Square, Mangomint — every salon platform has these |
+| Receptionist table stakes | HIGH | Well-established front-desk workflow patterns |
+| Differentiators | MEDIUM | Based on competitive analysis + UX best practices |
+| Anti-features | HIGH | Clear project context (AI agent is the client channel, not a web portal) |
+| Backend gaps | HIGH | Direct analysis of existing Prisma schema + route files |
+| MVP ordering | MEDIUM-HIGH | Based on dependency analysis; could shift based on team priorities |
 
 ---
 *Research completed: 2026-03-13*

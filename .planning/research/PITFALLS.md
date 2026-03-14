@@ -1,234 +1,286 @@
-# Pitfalls Research — AI Scheduling Platform
+# Pitfalls Research — Adding React Frontend to Existing Scheduling API
 
-## Critical Pitfalls (Cause Rewrites or Double-Bookings)
-
-### 1. Race Conditions / TOCTOU on Slot Availability
-
-**Problem:** Two AI agents check same slot simultaneously, both see "available", both create bookings → double-booking.
-
-**Warning Signs:**
-- Slot availability check and booking creation are separate, non-atomic operations
-- No database-level constraint preventing overlapping bookings
-- Tests pass but production with concurrent users fails
-
-**Prevention Strategy:**
-- Use PostgreSQL exclusion constraint or partial unique index on `(professional_id, date, start_time)` for active bookings
-- `SELECT FOR UPDATE SKIP LOCKED` in booking creation transaction
-- Never trust application-level locks alone
-
-**Phase:** Scheduling Engine (Phase 2)
+**Domain:** Beauty salon scheduling — admin dashboard + receptionist interface
+**Researched:** 2026-03-13
+**Focus:** Mistakes specific to adding a frontend to an API-only system
 
 ---
 
-### 2. TTL Hold Expiry via Polling Instead of Filtering
+## Critical Pitfalls (Cause Rewrites or Broken Access Control)
 
-**Problem:** Pre-reservation expires but row stays in DB with PRE_RESERVED status. Subsequent availability queries still see slot as occupied until cleanup job runs.
+### 1. AdminUser Model Has No Role Field
 
-**Warning Signs:**
-- Availability queries don't filter by `expiresAt`
-- Cleanup cron runs every 60s but AI agent gets "no slots" for already-expired holds
-- Stale pre-reservations accumulate
+**What goes wrong:** The current `AdminUser` model has no `role` column. The JWT login hardcodes `role: 'admin'` in the token payload (see `src/routes/admin/auth.js` line 42). When you add the receptionist role, there is no way to distinguish users without a schema migration. If you build the frontend first and add roles later, every component that checks permissions needs to be retrofitted.
 
-**Prevention Strategy:**
-- All availability queries MUST include `WHERE (status != 'PRE_RESERVED' OR expires_at > NOW())`
-- Treat expired pre-reservations as non-existent at query time
-- Cleanup cron is cosmetic (marks expired rows), not functional (availability doesn't depend on it)
+**Warning signs:**
+- You start building "receptionist view" components before adding `role` to the database
+- All JWT tokens say `role: 'admin'` regardless of who logged in
+- `adminAuth` middleware lets everyone through with no role check
 
-**Phase:** Scheduling Engine (Phase 2)
+**Prevention strategy:**
+- First migration of v2.0: add `role` enum (`ADMIN`, `RECEPTIONIST`) to `AdminUser` model with default `ADMIN`
+- Update JWT payload to include the actual user role from DB
+- Add `requireRole('ADMIN')` middleware for admin-only endpoints before building any frontend
+- Seed at least one user of each role for testing
 
----
-
-### 3. Duration Overlap Detection with Point Equality
-
-**Problem:** Checking `start_time = requested_time` misses overlaps. A 60-min booking at 14:00 blocks 14:00-15:00, but point check at 14:30 passes.
-
-**Warning Signs:**
-- Conflict check uses `WHERE start_time = $1` instead of interval overlap
-- Bookings with different start times but overlapping durations both succeed
-- Works with fixed 30-min slots but breaks with variable durations
-
-**Prevention Strategy:**
-- Use interval overlap formula: `existing_start < new_end AND existing_end > new_start`
-- Store both `startTime` and `endTime` on booking (calculated from service duration)
-- Test with overlapping scenarios: 14:00-15:00 vs 14:30-15:30
-
-**Phase:** Scheduling Engine (Phase 2)
+**Phase:** Must be Phase 1 (Foundation/Auth) — everything else depends on it
 
 ---
 
-### 4. Timezone Handling
+### 2. Frontend-Only Authorization Without Backend Enforcement
 
-**Problem:** Storing times as naive timestamps. Server in UTC, salon in BRT (UTC-3). 14:00 BRT stored as 14:00 UTC = wrong by 3 hours.
+**What goes wrong:** You hide UI elements based on role (receptionist cannot see "manage professionals" button), but the backend `/api/admin/*` routes have no role check — just `adminAuth` which verifies the JWT is valid, not what role it carries. A receptionist who knows the API endpoint can call admin-only operations directly. This is a security vulnerability, not just a UX issue.
 
-**Warning Signs:**
-- Using `TIMESTAMP` instead of `TIMESTAMPTZ` in PostgreSQL
-- Date calculations produce off-by-one errors around midnight
-- Daylight saving time transitions break slot generation
+**Warning signs:**
+- `adminAuth` middleware only checks JWT signature, never `req.admin.role`
+- Role checks exist only in React components (`{role === 'admin' && <AdminPanel />}`)
+- No tests for "receptionist calls admin endpoint and gets 403"
 
-**Prevention Strategy:**
-- Always use `TIMESTAMPTZ` in PostgreSQL
-- Store all times in UTC internally
-- Convert to/from salon timezone at API boundary only
-- Store salon timezone in configuration (e.g., `America/Sao_Paulo`)
-- Test with DST transition dates
+**Prevention strategy:**
+- Create `requireRole(...roles)` middleware that checks `req.admin.role` after `adminAuth`
+- Apply to every admin-only route: professionals CRUD, services CRUD, user management
+- Receptionist routes get their own middleware: `requireRole('ADMIN', 'RECEPTIONIST')`
+- Write integration tests: "receptionist hits admin endpoint, expects 403"
+- Frontend role checks are for UX only (hide buttons), never for security
 
-**Phase:** Foundation (Phase 1) — set timezone strategy from day one
-
----
-
-### 5. Working Hours End-of-Day Overrun
-
-**Problem:** Professional works until 18:00. Service takes 60 min. System offers 17:30 slot → appointment runs until 18:30, past working hours.
-
-**Warning Signs:**
-- Last slot offered is `work_end - slot_increment` instead of `work_end - service_duration`
-- Professionals complain about late appointments
-- Slot generation doesn't account for service duration at boundaries
-
-**Prevention Strategy:**
-- Slot generation: last possible start = `work_end - service_duration - buffer_time`
-- Validate: `slot_start + service_duration + buffer <= work_end`
-- Test edge case: service duration > remaining time window
-
-**Phase:** Scheduling Engine (Phase 2)
+**Phase:** Must be Phase 1 — before any route is exposed to the frontend
 
 ---
 
-### 6. Multi-Service Booking Treated as Independent Slots
+### 3. CORS Not Configured on Existing API
 
-**Problem:** Client books hair (60 min) + nails (30 min). System treats as two independent bookings, potentially with different professionals or non-sequential times.
+**What goes wrong:** The existing API was built for server-to-server calls (OrchestratorAI agent uses API key). There is no CORS middleware — the API likely returns no `Access-Control-Allow-Origin` header. When the React frontend (running on a different port or subdomain) makes fetch requests, the browser blocks every call. Developers waste hours debugging "network error" that is actually a CORS rejection.
 
-**Warning Signs:**
-- No concept of "booking group" or multi-service session
-- Client gets confirmation for 14:00 hair and 16:00 nails (gap)
-- No way to cancel/reschedule a multi-service booking atomically
+**Warning signs:**
+- First API call from React gets `TypeError: Failed to fetch` with no useful error message
+- Preflight OPTIONS requests return 404
+- Developer adds `"proxy"` to Vite config as a workaround but it breaks in production
 
-**Prevention Strategy:**
-- Design `BookingService` (one-to-many from Booking) from day one, even if MVP only supports single service
-- Booking is the session, services are line items
-- For MVP: restrict to 1 service per booking, but schema supports N
+**Prevention strategy:**
+- Add `cors` middleware to Express immediately, before any frontend work begins
+- Configure origin allowlist: development (`http://localhost:5173`) and production domain
+- Allow credentials if using httpOnly cookies (though current system uses Bearer tokens in headers)
+- Do NOT use `cors({ origin: '*' })` in production — specify exact origins
+- Test CORS with a simple fetch from the browser console before building React components
 
-**Phase:** Foundation schema design (Phase 1)
-
----
-
-## Moderate Pitfalls (Cause Delays or Tech Debt)
-
-### 7. AI Agent Concurrent Requests Without Idempotency
-
-**Problem:** AI agent timeout → retry → two pre-reservations created for same intent. Agent doesn't know which one to confirm.
-
-**Warning Signs:**
-- No idempotency key on booking creation endpoint
-- Duplicate bookings in database with same client + service + time
-- Agent error handling creates multiple bookings
-
-**Prevention Strategy:**
-- Accept optional `idempotencyKey` on `POST /bookings/pre-reserve`
-- If key exists with valid booking, return existing (200, not 201)
-- Store idempotency keys with TTL (e.g., 10 minutes)
-
-**Phase:** Scheduling Engine (Phase 2)
+**Phase:** Phase 1 — literally the first backend change
 
 ---
 
-### 8. Availability Query Performance Degradation
+### 4. Calendar Library Choice Lock-In
 
-**Problem:** As bookings grow, slot availability query gets slow. AI conversation stalls for seconds waiting for response.
+**What goes wrong:** Teams pick a React calendar library (FullCalendar, react-big-calendar, DayPilot, etc.) based on demos, then discover it does not support their specific scheduling needs — e.g., multi-professional column view (side-by-side schedules), drag-to-reschedule with server validation, or proper handling of the salon's timezone. By the time this is discovered, dozens of components are built around the library's API, making replacement extremely costly.
 
-**Warning Signs:**
-- Availability endpoint >500ms response time
-- Full table scan on bookings table for each availability check
-- No index on `(professional_id, date, status)`
+**Warning signs:**
+- Choosing a library because the demo looks good, without prototyping YOUR specific views
+- Library does not natively support "resource view" (columns per professional)
+- Drag-and-drop reschedule is client-only (no server validation hook)
+- Library bundles moment.js (400KB) when you use date-fns or day.js everywhere else
 
-**Prevention Strategy:**
-- Composite index: `(professional_id, start_time, end_time)` filtered by active statuses
-- Limit date range queries (max 7 days per request)
-- Consider caching working hours (rarely change)
+**Prevention strategy:**
+- Before committing: build a prototype with real data (3+ professionals, 20+ bookings) in the candidate library
+- Verify these specific capabilities:
+  - Day/week view with columns per professional (resource view)
+  - Click-to-create and drag-to-reschedule with async server validation (onEventChange callback that can reject)
+  - Proper timezone support (display in `America/Sao_Paulo`, not browser local)
+  - Reasonable bundle size and compatibility with your CSS framework (Tailwind/shadcn)
+- FullCalendar is the most battle-tested option with resource view support, but verify the premium (paid) features you need vs. the free tier
+- If team already uses shadcn/ui (from OrchestratorAI), note that shadcn has a basic calendar (date picker) that is NOT a scheduler — you still need a scheduling library
 
-**Phase:** Scheduling Engine (Phase 2) — add indexes from first migration
-
----
-
-### 9. PIX Payment Hold Window Too Tight
-
-**Problem:** Pre-reservation TTL is 5 minutes. PIX payment takes 2-3 minutes. By the time payment confirms, slot expired.
-
-**Warning Signs:**
-- Booking status changes to EXPIRED between payment creation and payment confirmation
-- Agent gets "booking expired" error after client already paid
-- Support issues with "I paid but booking disappeared"
-
-**Prevention Strategy:**
-- Extend pre-reservation TTL when payment is initiated (e.g., reset to 10 minutes)
-- Or: allow payment confirmation to reactivate expired pre-reservation if slot still available
-- Track payment initiation timestamp to distinguish "never paid" vs "paying"
-
-**Phase:** Payment Engine (Phase 3)
+**Phase:** Phase 2 (Calendar Views) — but the prototype/spike should happen in Phase 1
 
 ---
 
-### 10. Conversation Tracking Conflated with Booking State
+### 5. Optimistic UI Updates Causing Ghost Bookings on Calendar
 
-**Problem:** Conversation tracking stored directly on booking model. If conversation tracking fails, booking creation fails.
+**What goes wrong:** Calendar shows an appointment immediately when receptionist creates it (optimistic update), but server rejects it (double-booking, slot expired, validation error). The appointment flickers — appears, disappears, or worse, appears to succeed but data is inconsistent. With TanStack Query, if `cancelQueries` is not called in `onMutate`, a background refetch can overwrite the optimistic state mid-mutation, causing the UI to "toggle" between states.
 
-**Warning Signs:**
-- `conversationId` is a required field on booking
-- Booking creation fails when OrchestratorAI doesn't provide conversationId
-- Booking model has conversation-specific fields (channel, agentId) mixed with booking fields
+**Warning signs:**
+- Booking appears on calendar but is not in the database
+- Drag-reschedule shows appointment at new time, then it jumps back
+- Two receptionists see different calendar states
+- `refetchOnWindowFocus` triggers during a mutation, reverting optimistic state
 
-**Prevention Strategy:**
-- Separate `ConversationLink` table: `(bookingId, conversationId, agentId, channel, createdAt)`
-- `conversationId` is optional on booking creation
-- Conversation tracking failures logged but don't block booking
+**Prevention strategy:**
+- For booking creation: do NOT use optimistic updates. Use loading state + server confirmation + invalidation. Bookings are high-stakes operations where showing false success is worse than a spinner.
+- For drag-reschedule: show a "pending" visual state (opacity 50%, spinner) instead of optimistic success. Confirm with server, then update.
+- Always call `queryClient.cancelQueries` in `onMutate` if you do use optimistic updates
+- Use `queryClient.invalidateQueries` in `onSettled` (not just `onSuccess`) to ensure cache sync
+- TanStack Query's `placeholderData` is better than optimistic updates for read operations
 
-**Phase:** Conversation Tracking (Phase 4) — keep separate from booking model
+**Phase:** Phase 2 (Calendar Views) and Phase 3 (Booking Management)
 
 ---
 
-### 11. No Distinction Between "No Slots" and "Not Working That Day"
+## Moderate Pitfalls (Cause Delays or Technical Debt)
 
-**Problem:** Availability endpoint returns empty array for both "all slots taken" and "professional doesn't work Sundays". AI agent can't give helpful response.
+### 6. API Response Shape Mismatch Between Agent and Frontend Needs
 
-**Warning Signs:**
-- AI says "no availability" when professional is simply off that day
-- Client keeps asking about different times on a non-working day
-- No way to suggest "try Monday instead"
+**What goes wrong:** The existing API was designed for AI agent consumption. Responses return minimal data optimized for the agent flow (e.g., `GET /api/schedule/slots` returns flat time strings). The frontend needs richer data — professional names alongside IDs, service details with bookings, paginated lists with totals. Instead of adapting the API, developers either (a) make N+1 requests from the frontend or (b) start modifying existing endpoints and break the agent integration.
 
-**Prevention Strategy:**
-- Return structured response: `{ available: false, reason: "NOT_WORKING_DAY" | "FULLY_BOOKED" | "NO_SERVICE", nextAvailable: "2026-03-14" }`
-- Include `workingHours` for the requested date in response (null if not working)
-- AI agent can say "Professional doesn't work Sundays, next available Monday at 9am"
+**Warning signs:**
+- Frontend makes 5 API calls to render one calendar day (slots + professionals + services + bookings + clients)
+- Existing endpoint response shape changes and agent integration breaks
+- Frontend code has complex data-joining logic that should be server-side
 
-**Phase:** Scheduling Engine (Phase 2) — design response shape early
+**Prevention strategy:**
+- Create NEW endpoints under `/api/admin/` or `/api/dashboard/` for frontend consumption — do not modify existing agent endpoints
+- Design frontend-specific endpoints that return denormalized data (booking with client name, service name, professional name in one response)
+- Add `include` or `expand` query parameters for Prisma eager loading
+- Add pagination (`?page=1&limit=20&sort=startTime`) to list endpoints from day one
+- Keep agent endpoints (`/api/bookings/*`, `/api/schedule/*`) untouched
+
+**Phase:** Phase 1 — design frontend API layer before building components
+
+---
+
+### 7. JWT Token Refresh Not Implemented
+
+**What goes wrong:** Current JWT has 8-hour expiry (see auth.js line 42). For an API called by agents, this is fine — agents re-authenticate programmatically. For a human user in a browser, the token expires mid-shift and suddenly every action fails with 401. The receptionist loses unsaved work and has to log in again. Worse, if the frontend does not handle 401 gracefully, it shows cryptic errors instead of redirecting to login.
+
+**Warning signs:**
+- Users report "the system stopped working" after a few hours
+- 401 errors appear in the middle of a form submission
+- No refresh token mechanism, no silent token renewal
+- Frontend has no global 401 interceptor
+
+**Prevention strategy:**
+- Add a global Axios/fetch interceptor that catches 401 responses and redirects to login (preserving the current URL for redirect-back)
+- Either implement refresh tokens (more complex but better UX) or extend token expiry to match shift duration (12h) with re-login at shift start
+- For MVP: extend expiry + 401 interceptor with redirect. Add refresh tokens in a later phase if needed.
+- Store token in memory (React state/context), not localStorage (XSS risk). Use httpOnly cookie if possible.
+
+**Phase:** Phase 1 (Auth) — must be in place before real users start testing
+
+---
+
+### 8. Receptionist View That Is Just a Stripped Admin View
+
+**What goes wrong:** Developers build the admin dashboard first, then create the receptionist view by hiding admin features with `role !== 'admin'` conditionals. Result: the receptionist sees an admin layout with gaps where buttons used to be. The workflow is wrong — a receptionist needs a TODAY-focused, fast-action interface (see today's appointments, quick-book, search client), not a feature-reduced admin panel.
+
+**Warning signs:**
+- Receptionist components import from admin components with conditional rendering
+- Receptionist sees empty sidebars or navigation items they cannot use
+- Receptionist interface requires 3+ clicks to create an appointment
+- No "today's schedule" default view
+
+**Prevention strategy:**
+- Design the receptionist interface as a SEPARATE layout with its own navigation and component tree
+- Receptionist default view: today's appointments grouped by professional, with inline quick-actions
+- Key receptionist flows (all within 2 clicks): view today, create booking, find client, check-in client
+- Share reusable components (BookingCard, ClientSearch) but not layouts or pages
+- Get receptionist workflow feedback before building (what does a typical day look like?)
+
+**Phase:** Phase 3 (Receptionist Interface) — designed independently, not derived from admin
+
+---
+
+### 9. Real-Time Sync Between Multiple Users Not Planned
+
+**What goes wrong:** Two receptionists (or admin + receptionist) look at the same calendar. One books a slot, the other's view does not update. Second user tries to book the same slot and gets a server error. Or worse, with aggressive caching, the second user's view shows stale data for minutes.
+
+**Warning signs:**
+- TanStack Query `staleTime` set too high (>30s for calendar data)
+- No visual indicator that data might be stale
+- No mechanism to push updates to other connected clients
+- Users report "I see the booking but my colleague doesn't"
+
+**Prevention strategy:**
+- For MVP: use short `staleTime` (30s for calendar views) + `refetchOnWindowFocus: true` + manual "refresh" button. This handles 80% of cases.
+- Add `refetchInterval: 60000` (1 min) for the calendar day view as background polling
+- Server-side: return `Last-Modified` header so clients know data freshness
+- For v2.1+: add WebSocket/SSE for real-time push updates (not needed for MVP with 1-3 concurrent users)
+- Always show "last updated X seconds ago" on the calendar view
+
+**Phase:** Phase 2 (Calendar Views) — configure cache strategy from the start
+
+---
+
+### 10. Deploying Frontend and Backend on Same VPS Without Proper Routing
+
+**What goes wrong:** The VPS (72.61.52.70) already runs OrchestratorAI. Adding service-schedule frontend means you need either (a) a separate port, (b) a subdomain, or (c) a path prefix. Common mistake: serving the React SPA from Express `express.static()` — this couples frontend deployment to backend restarts and makes it impossible to deploy frontend independently.
+
+**Warning signs:**
+- Frontend build artifacts served from the Express app's `public/` directory
+- Backend restart kills the frontend
+- Cannot deploy frontend without restarting the API (which disconnects active agent sessions)
+- Nginx config becomes tangled with multiple apps on one IP
+
+**Prevention strategy:**
+- Use Nginx as reverse proxy: `schedule.yourdomain.com` for frontend, `api.schedule.yourdomain.com` for backend (or `/api` path prefix)
+- Frontend: Vite build output served by Nginx directly (static files, no Node process needed)
+- Backend: PM2 process, Nginx proxies `/api` to Express
+- Separate PM2 processes: frontend deploy = Nginx config reload (zero downtime), backend deploy = PM2 restart
+- Mirror the OrchestratorAI deployment pattern the team already uses
+
+**Phase:** Phase 1 — set up deployment infrastructure before building features
+
+---
+
+### 11. Date/Time Display Inconsistency Between Backend and Frontend
+
+**What goes wrong:** Backend stores times in UTC (as `Timestamptz`). Frontend displays them. Without a consistent conversion strategy, times appear wrong: a 14:00 BRT appointment shows as 17:00 on the calendar (UTC), or a booking created at midnight UTC appears on the wrong day in BRT. This is especially treacherous because it "works" in development if the developer's machine timezone matches the salon timezone.
+
+**Warning signs:**
+- Tests pass on developer machine but bookings appear on wrong day in production
+- "Off-by-one day" errors for appointments near midnight
+- Calendar shows times in UTC instead of salon timezone
+- Developer hardcodes timezone offset instead of using proper timezone library
+
+**Prevention strategy:**
+- Establish a single rule: API returns UTC (ISO 8601 with Z suffix), frontend converts to salon timezone for display
+- Use `date-fns-tz` or `luxon` for timezone conversion (NOT manual offset math)
+- Store salon timezone in configuration (`America/Sao_Paulo`), load it at app startup
+- All date formatting goes through a single utility function: `formatForDisplay(utcDate, salonTimezone)`
+- Test with browser timezone set to UTC and to Asia/Tokyo — if calendar looks right, your conversion works
+
+**Phase:** Phase 1 — establish date utility functions before any calendar work
 
 ---
 
 ## Minor Pitfalls (Fixable Friction)
 
-### 12. Slot Increment Granularity Mismatch
+### 12. Booking Status Color/Label Inconsistency
 
-**Problem:** Slots generated in 30-min increments but service takes 45 min. 9:00, 9:30, 10:00 offered → 9:00-9:45 blocks 9:30 slot but system doesn't recalculate.
+**What goes wrong:** Backend has 5 statuses (`PRE_RESERVED`, `CONFIRMED`, `CANCELLED`, `COMPLETED`, `NO_SHOW`). Frontend developers create ad-hoc color mappings in each component. One component shows PRE_RESERVED as yellow, another as blue. Labels vary: "Pre-reserved" vs "Pending" vs "Aguardando". Inconsistency confuses users.
 
-**Prevention:** Calculate available windows dynamically, not fixed grid. Offer slots where `service_duration` fits without overlapping any existing booking.
+**Prevention:** Create a single `BOOKING_STATUS_CONFIG` constant mapping each status to its label (in Portuguese), color, icon, and allowed transitions. Use it everywhere. Define it in Phase 1 as a shared constant.
 
-### 13. Missing Audit Trail for Booking State Changes
+---
 
-**Problem:** Booking status changes (PRE_RESERVED → CONFIRMED → CANCELLED) with no record of who/when/why. Disputes are unresolvable.
+### 13. Search Debounce Missing on Client Lookup
 
-**Prevention:** Create `BookingEvent` table: `(bookingId, fromStatus, toStatus, actor, reason, timestamp)`. Log every state transition.
+**What goes wrong:** Client search field (`buscar_cliente_por_telefone`) fires an API request on every keystroke. Typing "11999" sends 5 requests. Backend gets hammered, results flicker, and the correct result gets briefly shown then overwritten by a later (slower) request returning fewer results.
 
-### 14. No Buffer Time Between Appointments
+**Prevention:** Debounce search input (300ms). Use TanStack Query with `keepPreviousData: true` so results do not flicker. Cancel previous request when new one fires. Show loading indicator during debounce.
 
-**Problem:** 60-min service ends at 15:00, next starts at 15:00. Professional has zero transition time.
+---
 
-**Prevention:** Configurable buffer per professional or per service. Default 10-15 min. Factor into slot calculation: `slot_end = start + duration + buffer`.
+### 14. No Loading/Empty/Error States for Calendar Views
 
-### 15. AI Agent Confirms Without Verifying Hold Still Valid
+**What goes wrong:** Calendar view shows nothing while loading (white screen), shows nothing when there are no appointments (is it empty or broken?), and shows a generic error when the API fails. Users cannot tell if the system is working.
 
-**Problem:** Agent calls confirm 6 minutes after pre-reserve. Hold expired at 5 min. Confirm succeeds but slot was given to someone else.
+**Prevention:** Design three states for every view: loading (skeleton/shimmer), empty (helpful message: "Nenhum agendamento para hoje"), error (retry button with specific message). Use TanStack Query's `isLoading`, `isError`, `data.length === 0` to drive these states.
 
-**Prevention:** Confirm endpoint must check: (a) booking exists, (b) status is PRE_RESERVED, (c) `expiresAt > NOW()`. Return clear error if expired with suggestion to re-reserve.
+---
+
+### 15. Form Validation Only on Submit
+
+**What goes wrong:** Receptionist fills out a booking form (client, service, professional, time), submits, and only then sees "this professional does not offer this service" or "this time slot is taken." Wasted effort and frustration.
+
+**Prevention:** Validate dependent fields in real-time:
+- When professional is selected, filter services to only those the professional offers (use `ProfessionalService` relation)
+- When service + professional + date are selected, fetch available slots immediately
+- Disable the "create" button until all validations pass
+- Use Zod for form validation (consistent with backend)
+
+---
+
+### 16. Not Reusing OrchestratorAI Component Patterns
+
+**What goes wrong:** Team builds new component patterns (data tables, forms, modals) from scratch when OrchestratorAI already has established patterns with shadcn/ui + TanStack Query. Two codebases, two patterns, double the maintenance.
+
+**Prevention:** Extract common patterns from OrchestratorAI as reference: how data tables work, how forms are structured, how modals are handled. Use the same shadcn/ui components, same TanStack Query patterns, same Tailwind configuration. If possible, create a shared component library later.
 
 ---
 
@@ -236,12 +288,23 @@
 
 | Phase | Critical Pitfalls | Moderate Pitfalls | Minor Pitfalls |
 |-------|------------------|-------------------|----------------|
-| Phase 1: Foundation | #4 Timezone, #6 Multi-service schema | — | — |
-| Phase 2: Scheduling Engine | #1 Race conditions, #2 TTL expiry, #3 Duration overlap, #5 End-of-day | #7 Idempotency, #8 Performance, #11 No-slots reason | #12 Granularity, #14 Buffer time, #15 Expired hold |
-| Phase 3: Payment Engine | — | #9 PIX hold window | — |
-| Phase 4: Conversation Tracking | — | #10 Separate from booking | #13 Audit trail |
+| Phase 1: Foundation/Auth | #1 No role field, #2 No backend role checks, #3 No CORS | #6 API shape mismatch, #7 Token refresh, #10 VPS routing, #11 Date/time | #12 Status config, #16 Reuse patterns |
+| Phase 2: Calendar Views | #4 Calendar library lock-in, #5 Optimistic updates | #9 Real-time sync | #14 Loading/empty/error states |
+| Phase 3: Booking/Receptionist | #5 Optimistic updates | #8 Receptionist as stripped admin | #13 Search debounce, #15 Form validation |
 
-**Highest risk phase:** Phase 2 (Scheduling Engine) — 4 critical pitfalls. Design slot generation and conflict detection carefully.
+**Highest risk phase:** Phase 1 (Foundation) — 3 critical pitfalls plus 4 moderate. The existing API was built for agents, not browsers. The auth model, CORS, API shape, and deployment all need adaptation BEFORE any React component is written.
+
+**Second highest risk:** Phase 2 (Calendar Views) — calendar library choice is a one-way door that is expensive to reverse. Prototype before committing.
+
+---
+
+## Existing Pitfalls Still Relevant
+
+The v1.0 pitfalls (race conditions, double-booking, TTL expiry, timezone storage) remain relevant. The frontend does NOT fix these — it merely exposes them to human users who are less tolerant of glitches than AI agents. Specifically:
+
+- **Pitfall v1.0 #1 (Race conditions):** Now receptionists can create concurrent bookings, not just AI agents. Same server-side protections apply.
+- **Pitfall v1.0 #4 (Timezone):** Now the frontend must correctly display times that the backend already stores correctly. New failure mode: display-layer conversion errors.
+- **Pitfall v1.0 #11 (No-slots reason):** The frontend calendar can show this information visually (greyed-out days, "off" labels), making the structured response even more important.
 
 ---
 
@@ -249,11 +312,25 @@
 
 | Area | Confidence | Basis |
 |------|------------|-------|
-| Race condition / double-booking patterns | HIGH | Well-documented in booking system literature |
-| TTL and expiry patterns | HIGH | Standard distributed systems pattern |
-| Duration overlap math | HIGH | Classic interval overlap problem |
-| Timezone pitfalls | HIGH | Universal scheduling system issue |
-| PIX-specific timing | MEDIUM | Brazil-specific payment flow, timing estimates approximate |
+| Auth/RBAC pitfalls (#1, #2) | HIGH | Verified by reading actual source code — `AdminUser` has no role, JWT hardcodes 'admin' |
+| CORS pitfall (#3) | HIGH | Verified — no CORS middleware in existing middleware directory |
+| Calendar library risks (#4) | MEDIUM | Based on ecosystem research; specific library choice not yet evaluated |
+| Optimistic update patterns (#5) | HIGH | Well-documented TanStack Query pattern, verified with official docs |
+| API shape mismatch (#6) | HIGH | Verified by reading existing routes — agent-optimized, no pagination, no eager loading |
+| Deployment (#10) | HIGH | VPS deployment pattern verified from OrchestratorAI project memory |
+| Date/time display (#11) | HIGH | Schema uses Timestamptz correctly; frontend conversion is the new risk surface |
+
+---
+
+## Sources
+
+- Project source code: `src/middleware/auth.js`, `src/routes/admin/auth.js`, `prisma/schema.prisma`
+- [TanStack Query Optimistic Updates Discussion #7932](https://github.com/TanStack/query/discussions/7932)
+- [Concurrent Optimistic Updates in React Query (TkDodo)](https://tkdodo.eu/blog/concurrent-optimistic-updates-in-react-query)
+- [Common Mistakes in React Admin Dashboards (DEV Community)](https://dev.to/vaibhavg/common-mistakes-in-react-admin-dashboards-and-how-to-avoid-them-1i70)
+- [RBAC in Node.js and React (Medium)](https://medium.com/@ignatovich.dm/implementing-role-based-access-control-rbac-in-node-js-and-react-c3d89af6f945)
+- [React Calendar Components Comparison (DHTMLX)](https://dhtmlx.com/blog/best-react-scheduler-components-dhtmlx-bryntum-syncfusion-daypilot-fullcalendar/)
+- [Solving Frontend-Backend Integration Issues in Deployed React App](https://blog.slray.com/2024/10/21/Solving-Frontend-and-Backend-Integration-Issues-in-a-Deployed-React-Application/)
 
 ---
 *Research completed: 2026-03-13*

@@ -1,196 +1,216 @@
 # Project Research Summary
 
-**Project:** AI Scheduling Platform (Service-schedule)
-**Domain:** Appointment Booking API for AI Agent Consumption
+**Project:** Service-schedule v2.0 Frontend
+**Domain:** Beauty salon scheduling -- admin dashboard + receptionist interface (SPA frontend for existing Express API)
 **Researched:** 2026-03-13
 **Confidence:** HIGH
 
 ## Executive Summary
 
-This is a REST API backend that enables OrchestratorAI agents to book, manage, and track appointments at a beauty salon. The platform is not a general-purpose SaaS scheduling tool — it is a structured data service consumed by AI agents via HTTP. Research across all four domains converges on the same architectural conclusion: build a lean, conflict-safe scheduling engine with a PostgreSQL-first approach, expose well-formed endpoints that AI agents can call deterministically, and resist all scope creep toward CRM, reporting, or frontend concerns.
+Service-schedule v2.0 adds a React SPA frontend to an already-shipped Express REST API (v1.0) that currently serves only AI agents via OrchestratorAI. The recommended approach is a single React 19 application with role-filtered routes (admin vs receptionist), served as static files from Express in production. The stack mirrors OrchestratorAI's toolchain (React, shadcn/ui, TanStack Query, Zustand, react-hook-form) with version upgrades appropriate for a greenfield project (Tailwind v4, React 19, Vite 8). FullCalendar v6 is the calendar library of choice for the scheduling views. The team already knows this entire stack -- zero new paradigms to learn.
 
-The recommended approach is a 4-phase build following strict domain dependency order: Foundation + Identity + Services Catalog → Scheduling Engine → Payment Engine → Conversation Tracking. The stack mirrors the sibling OrchestratorAI project (Node.js 20, Express 4, Prisma 6, PostgreSQL 15) with one critical addition: slots must be calculated at query time from working hours rules — never stored as database rows. This single architectural decision eliminates an entire class of synchronization problems. Conflict detection must live at the PostgreSQL level via a partial unique index, not application-level locking, which fails under concurrent load.
+The existing API was designed for agent consumption: no CORS, no role-based access, no pagination, no frontend-specific data shapes. The biggest risk is not the frontend itself but the backend adaptations required to serve a browser-based client. Three critical pitfalls (missing AdminUser role field, frontend-only authorization, no CORS) must be resolved before any React component is written. A fourth critical risk -- calendar library lock-in -- requires a prototype spike early in development to validate FullCalendar meets the salon's specific scheduling view needs.
 
-The primary risk is Phase 2 (Scheduling Engine), which concentrates 4 critical pitfalls: race conditions on slot availability, stale pre-reservation TTL handling, duration-overlap detection with interval math, and end-of-day boundary overrun. These are all well-known problems in booking systems with well-known solutions. The risk is not unknowns — it is implementation discipline. The second risk is timezone handling: using `TIMESTAMPTZ` and UTC storage must be decided in Phase 1 and never deviated from. Setting timezone strategy after the fact requires a data migration.
-
----
+The frontend splits naturally into 4 phases: foundation/auth, entity management (services/professionals), booking management with receptionist interface, and calendar/dashboard polish. Seven backend gaps have been identified (role field, client list endpoint, status transitions, reschedule endpoint, dashboard aggregation, user management, admin booking endpoints). These gaps must be addressed in lockstep with the frontend phases that consume them. The receptionist interface must be designed as its own experience -- not a feature-reduced admin panel.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The stack is high-confidence because it is anchored to verified production versions from the sibling OrchestratorAI project. No technology choices require evaluation — they are already in use and proven. The only deferred addition is Redis (ioredis + Bull) for TTL-based pre-reservation expiry. For MVP, PostgreSQL-only TTL via `expiresAt` timestamp and a node-cron sweep every 30 seconds is sufficient. Add Redis when concurrent booking volume demands sub-second precision.
+The stack is high-confidence because every technology is already in use in OrchestratorAI, upgraded to current stable versions for this greenfield project. See [STACK.md](STACK.md) for full rationale, version pins, and installation commands.
 
 **Core technologies:**
-- **Node.js 20 LTS + Express 4.21** — runtime and framework, same as OrchestratorAI, stable and proven
-- **Prisma 6 + PostgreSQL 15** — ORM and database; ACID compliance is mandatory for conflict detection; partial unique indexes are the core safety mechanism
-- **Zod 3.24** — request/response validation at API boundary; same library already in use
-- **date-fns 3.6** — slot calculation and date arithmetic; lightweight alternative to deprecated Moment.js
-- **uuid 11 (v7)** — time-ordered UUIDs for booking IDs; sortable by creation time
-- **jsonwebtoken + bcryptjs** — AI agent API key auth and admin credential hashing
-- **Bull + node-cron** — deferred to post-MVP; needed if Redis is added for TTL precision
-- **winston** — structured logging for production observability
+- **React 19.2 + Vite 8**: Stable 15+ months. Greenfield project, no reason to start on older versions. Vite 8 uses Rolldown bundler.
+- **shadcn/ui + Tailwind CSS v4**: Same component system as OrchestratorAI. Source-owned components, no heavy library dependency. Full React 19 + Tailwind v4 compatibility confirmed.
+- **FullCalendar v6**: Industry standard for scheduling UIs (19K+ GitHub stars, 1M+ weekly downloads). Free tier covers day/week/list views and drag-and-drop. Resource columns (per-professional) are premium ($499/yr) but not needed for MVP -- use filter dropdown.
+- **TanStack Query v5 + Zustand v5**: Server state (bookings, services) in TanStack Query with 30s polling for calendar freshness. Client state (filters, view mode, auth session) in Zustand.
+- **react-hook-form + Zod**: Same form stack as OrchestratorAI and backend. Zod schemas can eventually be shared.
+- **date-fns v4**: Tree-shakeable, pt-BR locale support. Backend uses v3 -- no breaking changes.
+- **Native fetch**: No axios. Thin `apiFetch` wrapper handles JWT auth headers and 401 redirect.
 
-**Do not use:** MongoDB (no ACID), Sequelize (inferior to Prisma), TypeORM (no reason to switch), GraphQL (over-engineered for 8 fixed endpoints), Moment.js (deprecated), Express 5 RC (not stable).
+**Explicitly rejected:** Next.js/Remix (over-engineered for dashboard SPA), Ant Design/MUI (different design system, heavyweight), Redux (overkill -- Zustand + TanStack Query covers everything), TypeScript (maintain JS consistency with OrchestratorAI), axios (unnecessary), WebSockets (overkill for 1-3 concurrent users), FullCalendar resource plugins (premium, not needed for MVP).
 
 ### Expected Features
 
-Research identifies a clear 5-step critical path that is the entire purpose of the platform: Client lookup → Slot query → Conflict detection → Booking creation → Confirmation response. Every other feature either enables or enriches this path.
+See [FEATURES.md](FEATURES.md) for full analysis with complexity ratings, backend support status, and dependency diagram.
 
-**Must have (table stakes) — 15 features for MVP:**
-- Client upsert (register + lookup by phone in single call) — AI does not do a separate registration step
-- Service catalog with duration and price — AI must quote and describe services
-- Service-to-professional assignment (many-to-many) — not every professional does every service
-- Professional weekly availability configuration — the input to slot generation
-- Available slot query (by date, service, professional) — core scheduling action, hot path
-- Atomic booking creation with DB-level conflict detection — race-condition safe
-- Booking confirmation response (structured object) — AI composes confirmation message from this
-- Booking lookup by client phone — "your upcoming appointments"
-- Booking cancellation — frees slot back to availability
-- Payment record with price snapshot at booking time — prices change; historical records must not
-- Payment status tracking (pending/paid/cancelled) — receptionist visibility
-- Idempotency key on booking creation — AI agent retries must not double-book
-- Structured error codes AI can interpret — not just HTTP 4xx status codes
-- Session-to-booking linkage (conversationId on booking) — audit trail
-- "Next N available slots" query — reduces AI conversation turns significantly
+**Must have (table stakes) -- 15 features ordered by dependency:**
+1. Auth with role-based access (admin vs receptionist) -- gates everything
+2. Admin user management (create receptionist accounts)
+3. Services CRUD UI (table + create/edit/deactivate)
+4. Professionals CRUD + working hours + service assignment
+5. Calendar view (day + week) with per-professional filtering
+6. Booking creation flow (client search/create -> service -> professional -> slot -> confirm)
+7. Booking status management (confirm, cancel, complete, no-show)
+8. Client search, registration, and appointment history
+9. Receptionist today view (daily agenda grouped by professional)
+10. Receptionist quick booking (streamlined 3-step flow)
 
-**Should have (MVP differentiators):**
-- Conflict explanation in availability response (`NOT_WORKING_DAY` vs `FULLY_BOOKED` vs `NO_SERVICE`) — enables AI to give actionable response
-- Client auto-create on first booking (upsert on phone) — eliminates two-step registration
-- Idempotent confirm endpoint — returns existing confirmed booking if already confirmed
+**Should have (high-value, low-effort differentiators):**
+- Color-coded booking statuses on calendar (pure frontend, zero backend work)
+- Booking notes field (schema already supports it)
+- Payment status badge (data already linked)
+- Quick client history popup (endpoint exists)
+- Dashboard KPI cards (needs one aggregation endpoint)
 
 **Defer to post-MVP:**
-- Atomic rebook (cancel + rebook in one call) — two calls works for v1
-- Booking intent/hold pattern (slot reserved for 5 min while AI converses) — PostgreSQL TTL approach sufficient for MVP volume
-- Waitlist — complex state machine, low immediate need
-- Recurring appointments — complex scheduling, not needed for AI conversation flow
-- Multi-service single appointment — requires sequential slot math
-- Webhook events — useful but not blocking AI consumption
-- Google Calendar sync — OAuth complexity, not needed for launch
-- Manager reporting/dashboard — booking data supports ad-hoc queries
+- Drag-and-drop rescheduling, professional utilization analytics, responsive tablet layout, print agenda, bulk working hours template
 
-**Anti-features — explicitly out of scope:**
-Full CRM, inventory management, staff payroll, marketing campaigns, public booking widgets, video conferencing, dynamic pricing, loyalty points, multi-tenant billing, real-time WebSocket streaming, and NLU inside the platform (OrchestratorAI handles NLU; this platform receives structured API calls only).
+**Anti-features (explicitly do NOT build):**
+- Online client self-booking portal (AI agent IS the client channel)
+- SMS/WhatsApp notifications (OrchestratorAI handles this)
+- Loyalty programs, inventory, financial reports, multi-location, payroll, recurring appointments, waitlist, dynamic pricing, real-time WebSocket updates
 
 ### Architecture Approach
 
-The platform is organized as 5 domain components with a clear dependency hierarchy. Components 1 and 2 are foundational with no upstream dependencies. Component 3 (Scheduling Engine) depends on both. Components 4 and 5 depend on Component 3 and can be built in parallel after it. The project structure follows a Controller → Service → Repository pattern; fat controllers are explicitly an anti-pattern here because the scheduling engine logic (slot generation, conflict detection, TTL management) is non-trivial and must be unit-testable in isolation.
+Single React SPA in a `frontend/` directory with its own `package.json`, served as static files by Express in production. One PM2 process. Vite dev server with API proxy in development. Role-based routing within a single app -- not two separate apps. Frontend calls dedicated `/api/admin/*` endpoints; existing agent endpoints remain untouched. Business logic stays server-side; the frontend never calculates slots or validates conflicts locally. See [ARCHITECTURE.md](ARCHITECTURE.md) for full component structure, data flow, and anti-patterns.
 
 **Major components:**
-1. **Identity & Clients** — client records, phone-based lookup, no CRM features; foundational, no upstream deps
-2. **Services Catalog** — service definitions, professional profiles, service-to-professional assignment; foundational, no upstream deps
-3. **Scheduling Engine (Core)** — slot generation (calculated, not stored), pre-reservation with TTL, atomic booking creation, conflict detection via PostgreSQL partial unique index, booking lifecycle (PRE_RESERVED → CONFIRMED → CANCELLED)
-4. **Payment Engine** — PIX simulation for MVP, payment intent creation, status tracking, webhook receiver for real payment gateway (post-MVP)
-5. **Conversation Tracking** — links OrchestratorAI conversation sessions to bookings; isolated in its own table to prevent tracking failures from blocking booking creation
+1. **API Client Layer** (`api/` + `hooks/`) -- `apiFetch` wrapper with JWT auth, TanStack Query hooks per entity, 401 interceptor with login redirect
+2. **Admin Shell** -- sidebar navigation, CRUD pages for services/professionals/clients/users, calendar, dashboard
+3. **Receptionist Shell** -- separate layout optimized for speed: today's agenda, quick booking wizard, client lookup (designed independently, NOT a stripped-down admin)
+4. **Shared Components** -- BookingCard, ClientSearch, StatusBadge, forms via shadcn/ui primitives
+5. **New Backend Admin Routes** -- `/api/admin/bookings` (paginated/filterable), `/api/admin/clients` (paginated/searchable), `/api/admin/dashboard/summary`, `/api/admin/users`
 
 **Key architectural rules:**
-- Slots are NEVER stored as database rows; they are calculated at query time from working hours minus existing active bookings
-- Conflict detection is ALWAYS at PostgreSQL level via partial unique index on `(professional_id, start_time)` where status is active — never application-level
-- Conversation tracking failures NEVER block booking creation — decoupled via optional foreign key
+- Both frontend and AI agents call the same service layer; routes differ but business logic is shared
+- Create NEW endpoints under `/api/admin/` for frontend -- do NOT modify existing agent endpoints
+- Admin endpoints return denormalized data (booking with client name, service name, professional name in one response)
+- Frontend is UX-only for authorization; backend `requireRole()` middleware enforces security
 
 ### Critical Pitfalls
 
-All 6 critical pitfalls (causes of rewrites or double-bookings) are well-understood problems with known solutions. The risk is forgetting to implement the solution, not discovering a novel problem.
+See [PITFALLS.md](PITFALLS.md) for all 16 pitfalls with detailed prevention strategies and phase assignments.
 
-1. **Race conditions / TOCTOU double-booking** — use PostgreSQL partial unique index on `(professional_id, start_time)` for active bookings + `SELECT FOR UPDATE SKIP LOCKED` in booking transaction; never rely on application-level check-then-insert
-2. **Stale TTL pre-reservations blocking availability** — availability queries MUST include `WHERE (status != 'PRE_RESERVED' OR expires_at > NOW())`; the cleanup cron is cosmetic, not functional
-3. **Duration overlap detection using point equality** — use interval overlap formula: `existing_start < new_end AND existing_end > new_start`; store both `startTime` and `endTime` on every booking
-4. **Timezone naivety** — use `TIMESTAMPTZ` everywhere in PostgreSQL schema; store UTC; convert at API boundary only; store salon timezone in config as `America/Sao_Paulo`; set this strategy in Phase 1 schema, never retrofitted
-5. **End-of-day slot overrun** — last offered slot must satisfy `slot_start + service_duration + buffer <= work_end`; test explicitly with edge cases
-6. **Multi-service schema lock-in** — design `BookingService` as one-to-many from Booking in Phase 1 schema even though MVP restricts to single service; retrofitting this relationship after data exists is painful
-
----
+1. **No role field on AdminUser** -- JWT hardcodes `role: 'admin'`. Must add role column + migration as the very first v2.0 task. Everything else depends on it.
+2. **Frontend-only authorization** -- `adminAuth` middleware checks JWT validity but never checks role. Receptionist can call admin-only endpoints via direct API call. Must add `requireRole()` middleware before exposing any route.
+3. **No CORS on existing API** -- API was built for server-to-server calls. Browser requests will fail silently. Add `cors` middleware before any frontend development.
+4. **Calendar library lock-in** -- Wrong library choice is expensive to reverse. Build a prototype with real data (3+ professionals, 20+ bookings) before full commitment to FullCalendar.
+5. **Optimistic updates causing ghost bookings** -- Do NOT use optimistic updates for booking creation. Use loading state + server confirmation. Bookings are high-stakes; showing false success is worse than a spinner.
 
 ## Implications for Roadmap
 
-Based on research, the dependency chain is unambiguous and the phase structure follows directly from it. There is no alternative ordering that makes sense.
+Based on combined research, the dependency chain is clear. Four phases, each delivering usable functionality.
 
-### Phase 1: Foundation + Identity + Services Catalog
+### Phase 1: Foundation and Auth
 
-**Rationale:** No dependencies upstream. Everything else depends on clients (who is booking) and services (what is being booked). Timezone strategy and schema design decisions made here cannot be cheaply changed later.
-**Delivers:** Running Express server, Prisma schema with all models, client CRUD with phone upsert, service catalog CRUD, professional CRUD, service-to-professional assignments, API key authentication middleware, global error handler with structured error envelope.
-**Addresses:** Client registration + lookup, service listing, service-to-professional assignment, service duration as first-class field, authentication, consistent error envelope.
-**Avoids:** Pitfall #4 (timezone — set `TIMESTAMPTZ` from first migration), Pitfall #6 (multi-service schema — design `BookingService` one-to-many from day one).
-**Research flag:** Standard patterns — no additional research needed for this phase.
+**Rationale:** Three critical pitfalls (#1 role field, #2 backend auth, #3 CORS) and four moderate pitfalls (#6 API shape, #7 token refresh, #10 VPS routing, #11 date/time) all live here. Nothing else can proceed until auth works end-to-end and the integration pattern is proven.
 
-### Phase 2: Scheduling Engine
+**Delivers:** Working login, role-based routing, admin user management page (proves full CRUD cycle), deployment infrastructure, API client pattern with 401 handling, date utility functions, booking status config constant.
 
-**Rationale:** Depends on Phase 1 (needs service duration for slot calculation, needs client for booking). This is the highest-risk phase with 4 critical pitfalls. It is also the highest-value phase — without it, there is no product. Slot generation algorithm and conflict detection must be implemented with care and tested against edge cases before any dependent phase begins.
-**Delivers:** Working hours configuration (weekly recurring rules), slot generation algorithm (calculated, not stored), pre-reservation endpoint with `expiresAt` TTL, booking creation with DB-level conflict detection, booking confirm/cancel, booking lookup by client, idempotency key support, structured availability response with `NOT_WORKING_DAY` / `FULLY_BOOKED` reason codes, composite index on bookings for query performance.
-**Uses:** PostgreSQL partial unique index, `SELECT FOR UPDATE SKIP LOCKED`, interval overlap math, `expiresAt` filtering in availability queries, node-cron for cleanup sweep.
-**Implements:** Scheduling Engine component (core of architecture).
-**Avoids:** Pitfall #1 (race conditions), Pitfall #2 (TTL expiry), Pitfall #3 (duration overlap), Pitfall #5 (end-of-day overrun), Pitfall #7 (idempotency), Pitfall #8 (availability query performance), Pitfall #11 (availability reason codes), Pitfall #12 (slot granularity), Pitfall #14 (buffer time), Pitfall #15 (expired hold on confirm).
-**Research flag:** Needs careful review during planning. Consider `/gsd:research-phase` for the slot generation algorithm implementation specifically. The math is known but the Prisma query patterns for `SELECT FOR UPDATE` may need reference.
+**Addresses features:** Login page + session management, role-based access control, admin user management.
 
-### Phase 3: Payment Engine
+**Avoids pitfalls:** #1 (no role field), #2 (frontend-only auth), #3 (no CORS), #6 (API shape mismatch), #7 (token refresh), #10 (VPS routing), #11 (date/time), #12 (status config), #16 (reuse OrchestratorAI patterns).
 
-**Rationale:** Depends on Phase 2 (payment is linked to a booking). Isolated enough to be self-contained. For MVP, payment is simulated — no external gateway integration required.
-**Delivers:** PIX payment intent creation (simulated), payment status tracking (PENDING/PAID/CANCELLED), `simulate-payment` endpoint for dev/test, price snapshot stored at booking time (never read from live catalog), extended pre-reservation TTL when payment is initiated (avoids Pitfall #9).
-**Implements:** Payment Engine component.
-**Avoids:** Pitfall #9 (PIX hold window — extend TTL when payment initiated).
-**Research flag:** Standard patterns for MVP simulation. If real PIX gateway integration is scoped post-MVP, that phase will need research on the specific payment provider's webhook format.
+**Backend work required:**
+- Add `role` to AdminUser schema + Prisma migration
+- Update JWT payload to include dynamic role from DB
+- Add `requireRole()` middleware
+- Add CORS middleware
+- Create `/api/admin/users` CRUD endpoints
+- Add static file serving to `app.js` (production mode)
 
-### Phase 4: Conversation Tracking + Integration Polish
+### Phase 2: Service and Professional Management
 
-**Rationale:** Depends on Phase 2 (needs booking IDs to link). Can run in parallel with Phase 3 after Phase 2 completes. Final phase closes the loop between OrchestratorAI conversations and booking records, and hardens the API for production agent consumption.
-**Delivers:** Separate `ConversationLink` table (decoupled from booking model), `conversationId` optional on booking creation, query bookings by conversation, booking state change audit trail (`BookingEvent` table), Swagger/OpenAPI documentation at `/api-docs`, rate limiting on all endpoints, final error code review.
-**Avoids:** Pitfall #10 (conversation tracking separate from booking model), Pitfall #13 (audit trail for booking state changes).
-**Research flag:** Standard patterns — no additional research needed.
+**Rationale:** Simplest CRUD pages, using mostly existing backend endpoints. Establishes the table + form component patterns (shadcn DataTable, react-hook-form modals) that all subsequent pages will follow. Provides reference data (services, professionals, working hours) that the booking flow needs.
+
+**Delivers:** Services CRUD UI (table + create/edit/deactivate), Professionals CRUD UI with working hours weekly grid and service assignment multi-select.
+
+**Addresses features:** Services CRUD, Professionals CRUD, professional-service assignment, working hours management.
+
+**Avoids pitfalls:** None critical -- low-risk phase with well-established patterns.
+
+**Backend work required:** Minimal -- possibly add pagination to existing service/professional list endpoints if not present.
+
+### Phase 3: Booking Management and Receptionist Interface
+
+**Rationale:** Highest-value phase. The booking creation flow, status management, and receptionist daily view are the core product. Requires the most new backend endpoints. The receptionist interface must be designed independently -- not derived from the admin UI (pitfall #8). This is where the frontend becomes genuinely useful.
+
+**Delivers:** Daily agenda view (receptionist primary screen), booking creation wizard (client lookup -> service -> professional -> slot -> confirm), booking status transitions (complete, no-show, cancel), client search/registration/history, receptionist quick booking flow, booking notes, payment status badge.
+
+**Addresses features:** Create booking, cancel booking, booking status transitions, today's agenda, quick booking flow, client search, client registration, client history, booking notes, payment status badge.
+
+**Avoids pitfalls:** #5 (no optimistic updates for booking creation -- use loading + confirmation), #8 (receptionist as separate design), #13 (search debounce on client lookup), #15 (real-time form validation -- filter services by professional, fetch slots on selection).
+
+**Backend work required:**
+- `GET /api/admin/bookings` (paginated, filterable by date/status/professional/client)
+- `GET /api/admin/bookings/:id` (detail with client, professional, service, payment data)
+- `PATCH /api/admin/bookings/:id/status` (complete, no-show transitions)
+- `GET /api/admin/clients` (paginated, searchable by name/phone)
+- `GET /api/admin/clients/:id/bookings` (appointment history)
+
+### Phase 4: Calendar View and Dashboard
+
+**Rationale:** Calendar and dashboard are high-value polish features but not blocking. The receptionist can work from the daily view (Phase 3). The admin can work from the booking list (Phase 3). Calendar requires FullCalendar integration -- prototype spike should happen at the start of this phase. Dashboard needs one aggregation endpoint.
+
+**Delivers:** Weekly/daily calendar with per-professional filtering, color-coded booking statuses, click-to-view-details on calendar events, dashboard KPI cards (booking count, revenue, no-show rate, occupancy), quick client history popup on booking cards.
+
+**Addresses features:** Calendar view (day + week), color-coded statuses, dashboard KPI cards, quick client history popup.
+
+**Avoids pitfalls:** #4 (calendar library lock-in -- prototype with real data first), #5 (pending visual state for drag interactions, not optimistic), #9 (short staleTime 30s + refetchInterval 60s + refetchOnWindowFocus for calendar), #14 (loading/empty/error states on all views).
+
+**Backend work required:**
+- `GET /api/admin/dashboard/summary` (today's booking count, revenue, upcoming count, no-show rate)
+- Verify booking list endpoint supports date range filtering for calendar data source
 
 ### Phase Ordering Rationale
 
-- **Phases 1 → 2 is the critical dependency chain.** There is no scheduling without clients and services. Phase 1 must be complete before Phase 2 starts.
-- **Phase 3 and Phase 4 can run in parallel** after Phase 2 completes, if multiple developers are available. Each depends on booking records but not on each other.
-- **The 4-phase structure mirrors the 5-component architecture** directly, with Phase 1 covering the two foundational components (Identity + Catalog), keeping implementation batches tight and reviewable.
-- **Schema decisions in Phase 1 are load-bearing.** Timezone (`TIMESTAMPTZ`), `BookingService` one-to-many shape, and the partial unique index design should all be finalized in Phase 1 schema review before any service layer is written.
+- **Auth first** because 3 critical pitfalls block everything and the entire UI depends on role-based access. The existing API has zero browser-client support.
+- **Entity management second** because it uses existing endpoints, establishes reusable component patterns, and provides reference data that booking forms depend on.
+- **Booking/receptionist third** because it is the core product value, requires the most new backend work, and benefits from patterns established in Phase 2.
+- **Calendar/dashboard last** because they are enhancements over the daily view and booking list. They can ship independently without blocking receptionist workflows. Calendar library risk is isolated to this phase.
 
 ### Research Flags
 
 Phases likely needing deeper research during planning:
-- **Phase 2 (Scheduling Engine):** The slot generation algorithm implementation in Prisma/PostgreSQL warrants a dedicated research step. Specifically: how to express `SELECT FOR UPDATE SKIP LOCKED` via Prisma raw query, the exact partial unique index DDL in Prisma schema (`@@index` with a `where` clause via `raw`), and the interval overlap condition in a Prisma `where` clause.
+- **Phase 1:** VPS deployment infrastructure alongside OrchestratorAI needs concrete nginx/PM2 configuration. The serving strategy (Express static vs separate nginx) should be finalized.
+- **Phase 3:** Booking creation wizard UX -- multi-step form with dependent field validation (professional filters services, service + date fetches slots) is complex interaction design. Consider researching react-hook-form multi-step patterns.
+- **Phase 4:** FullCalendar integration needs a prototype spike with real data. Verify: timegrid styling with Tailwind, event click handlers, date range event source, professional filter integration, and whether the free tier is truly sufficient.
 
-Phases with standard patterns (skip research-phase):
-- **Phase 1 (Foundation):** Express + Prisma setup is well-documented. Team already has a working reference in OrchestratorAI.
-- **Phase 3 (Payment Engine):** Simulated payment for MVP is trivial. No external API integration required.
-- **Phase 4 (Conversation Tracking):** Standard audit table pattern; Swagger setup is well-documented.
-
----
+Phases with standard patterns (skip deep research):
+- **Phase 2:** CRUD table + form is established. shadcn DataTable + react-hook-form modals. Team has done this in OrchestratorAI. No surprises expected.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Pinned to OrchestratorAI production versions; no speculative choices |
-| Features | HIGH | Table stakes are industry-standard; AI ergonomics differentiators are MEDIUM but the must-haves are clear |
-| Architecture | HIGH | Slot-calculation-not-stored and DB-level conflict detection are industry best practices with abundant precedent |
-| Pitfalls | HIGH | All critical pitfalls are well-documented in booking system literature; no novel risks identified |
+| Stack | HIGH | All versions verified via npm. Team already uses this stack in OrchestratorAI. React 19, Vite 8, Tailwind v4 all stable 12+ months. |
+| Features | MEDIUM-HIGH | Table stakes verified across 9 salon software platforms. Backend gaps identified by direct schema/route analysis. MVP ordering could shift based on team priorities. |
+| Architecture | HIGH | Standard SPA + REST API pattern. Serving strategy, project structure, auth flow, API client pattern all well-established. Verified against Vite docs and Express static serving patterns. |
+| Pitfalls | HIGH | Critical pitfalls verified by reading actual source code (`AdminUser` has no role, JWT hardcodes 'admin', no CORS middleware). These are facts, not speculation. |
 
-**Overall confidence: HIGH**
+**Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Redis vs PostgreSQL-only TTL at MVP scale:** Research recommends starting with PostgreSQL-only (`expiresAt` + cron) and adding Redis later. The threshold for "when to add Redis" is not defined. During planning, set an explicit criterion (e.g., >50 concurrent booking attempts/minute) that triggers the Redis addition.
-- **PIX payment gateway specifics (post-MVP):** The MVP uses simulated payment. If real PIX integration is scoped for a future milestone, the webhook format, payment status codes, and signing requirements for the specific gateway (e.g., Pagar.me, Gerencianet/Efí) will need dedicated research.
-- **Multi-tenant expansion:** Research confirms this platform is single-tenant (one salon). If multi-tenant is ever needed, it is a separate milestone and would require schema changes (add `tenantId` to all tables). Flag this during Phase 1 schema review — adding a `salonId` now costs almost nothing.
-- **Prisma raw query for partial unique index:** Prisma schema DSL does not natively support `WHERE` clause on indexes. The partial unique index will require a raw SQL migration step. Validate this approach during Phase 2 planning.
-
----
+- **Calendar library validation:** FullCalendar is recommended but not prototyped with this project's data. Build a spike with 3+ professionals and 20+ bookings before full commitment in Phase 4.
+- **AdminUser role migration:** Schema change has not been written yet. Must be the first migration of v2.0.
+- **Client list endpoint:** `GET /api/clients` with pagination/search does not exist. Must be built for Phase 3.
+- **Booking status transition endpoint:** No generic status change endpoint exists. Need `PATCH /api/admin/bookings/:id/status` for Phase 3.
+- **Dashboard aggregation query:** No summary endpoint exists. Need to design the query for Phase 4.
+- **VPS deployment alongside OrchestratorAI:** Nginx configuration for multiple apps on same VPS (72.61.52.70) not yet planned. Resolve in Phase 1.
+- **CORS middleware:** Confirmed missing from current backend middleware. Must be added in Phase 1 before any frontend work begins.
+- **Reschedule endpoint:** `PUT /api/bookings/:id` for changing time/professional does not exist. Needed if drag-and-drop is added post-MVP.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- OrchestratorAI production `package.json` — verified stack versions (Node 20, Express 4.21.2, Prisma 6.19.0, Zod 3.24.2, Jest 29.7.0)
-- PostgreSQL 15 official documentation — partial unique indexes, `TIMESTAMPTZ`, `SELECT FOR UPDATE SKIP LOCKED`
-- Prisma 6 documentation — schema definition, raw queries, migration DDL
+- Project source code: `src/middleware/auth.js`, `src/routes/admin/auth.js`, `prisma/schema.prisma`, `src/app.js`
+- [React 19 stable release](https://react.dev/blog/2024/12/05/react-19)
+- [Vite releases](https://vite.dev/releases)
+- [FullCalendar React docs](https://fullcalendar.io/docs/react)
+- [TanStack Query overview](https://tanstack.com/query/latest)
+- [Tailwind CSS v4 release](https://tailwindcss.com/blog/tailwindcss-v4)
+- [shadcn/ui React 19 + Tailwind v4 support](https://ui.shadcn.com/docs/react-19)
+- npm registry (direct version verification via `npm view`)
 
 ### Secondary (MEDIUM confidence)
-- Industry scheduling system patterns (Calendly, Acuity, Square Appointments, Fresha) — table stakes feature convergence
-- Booking system literature — race condition patterns, TTL expiry strategies, interval overlap math
-- OrchestratorAI TRANSFORM capability mock analysis — MVP scoping context for what the AI agent currently fakes
-
-### Tertiary (MEDIUM confidence, domain-specific)
-- Brazil PIX payment flow patterns — timing estimates for pre-reservation window (5-10 min); specific gateway requirements need validation when integration is scoped
-- Beauty salon operations domain knowledge — buffer time defaults, working hours patterns
+- Salon software feature comparisons: [Zylu](https://zylu.co/10-must-have-features-salon-software-management-2026/), [Mangomint](https://www.mangomint.com/blog/salon-software-features/), [Zenoti](https://www.zenoti.com/salon-management-software), [Booknetic](https://www.booknetic.com/blog/essential-online-booking-system-features), [TheSalonBusiness](https://thesalonbusiness.com/best-salon-software/)
+- [React calendar component comparisons (DHTMLX)](https://dhtmlx.com/blog/best-react-scheduler-components-dhtmlx-bryntum-syncfusion-daypilot-fullcalendar/)
+- [TanStack Query optimistic updates (TkDodo)](https://tkdodo.eu/blog/concurrent-optimistic-updates-in-react-query)
+- [RBAC in Node.js and React](https://medium.com/@ignatovich.dm/implementing-role-based-access-control-rbac-in-node-js-and-react-c3d89af6f945)
+- [Vite backend integration guide](https://vite.dev/guide/backend-integration)
+- [React + Express + Vite same port pattern](https://dev.to/herudi/single-port-spa-react-and-express-using-vite-same-port-in-dev-or-prod-2od4)
 
 ---
 *Research completed: 2026-03-13*
