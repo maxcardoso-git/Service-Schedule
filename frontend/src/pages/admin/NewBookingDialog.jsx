@@ -479,7 +479,9 @@ export default function NewBookingDialog({ open, onOpenChange, onBookingCreated 
               </div>
 
               <div>
-                <p className="text-sm font-medium mb-1">Available Slots</p>
+                <p className="text-sm font-medium mb-1">
+                  Available Slots{selectedService ? ` — ${selectedService.name}` : ''}
+                </p>
                 <SlotGrid />
               </div>
 
